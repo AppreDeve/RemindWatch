@@ -8,12 +8,96 @@
     tools:context=".MainActivity">
 
     <TextView
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
+        android:fontFamily="@font/poppins_medium"
+        android:text="RemindWatch"
+        android:textSize="24sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.155"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.075" />
+
+    <Button
+        android:id="@+id/button7"
+        android:layout_width="110dp"
+        android:layout_height="46dp"
+        android:background="@drawable/rect_button"
+        android:text="Expirados"
+        android:textSize="11sp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="266dp"
+        tools:layout_editor_absoluteY="107dp" />
+
+    <Button
+        android:id="@+id/button5"
+        android:layout_width="116dp"
+        android:layout_height="46dp"
+        android:background="@drawable/rect_button"
+        android:text="Completados"
+        android:textSize="11sp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="150dp"
+        tools:layout_editor_absoluteY="107dp" />
+
+    <Button
+        android:id="@+id/button6"
+        android:layout_width="114dp"
+        android:layout_height="46dp"
+        android:background="@drawable/rect_button"
+        android:text="Pendientes"
+        android:textColorLink="#EDE1E1"
+        android:textSize="11sp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="37dp"
+        tools:layout_editor_absoluteY="107dp" />
+
+    <FrameLayout
+        android:layout_width="339dp"
+        android:layout_height="70dp"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="38dp"
+        tools:layout_editor_absoluteY="172dp">
+
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="149dp"
+            android:layout_height="33dp"
+            android:text="TextView TextView"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="306dp"
+            android:layout_height="33dp"
+            android:layout_gravity="bottom"
+            android:text="TextView TextView  TextView"
+            android:textAlignment="textStart"
+            android:textSize="16sp" />
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="49dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|right"
+            android:adjustViewBounds="true"
+            android:cropToPadding="true"
+            tools:srcCompat="@tools:sample/avatars" />
+    </FrameLayout>
+
+    <Button
+        android:id="@+id/button9"
+        android:layout_width="66dp"
+        android:layout_height="45dp"
+        android:gravity="center"
+        app:icon="@android:drawable/ic_input_add"
+        tools:layout_editor_absoluteX="310dp"
+        tools:layout_editor_absoluteY="266dp" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
