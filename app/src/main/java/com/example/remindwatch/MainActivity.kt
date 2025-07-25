@@ -5,6 +5,7 @@ import android.app.TimePickerDialog
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -37,13 +38,25 @@ class MainActivity : AppCompatActivity() {
 
     // Configura los elementos de la interfaz y sus listeners
     private fun inicializarUI() {
-        val tituloEditText = findViewById<EditText>(R.id.tituloEditText)
-        val descripcionEditText = findViewById<EditText>(R.id.descripcionEditText)
-        val recordatorioEditText = findViewById<EditText>(R.id.recordatorioEditText)
-        val vencimientoEditText = findViewById<EditText>(R.id.vencimientoEditText)
-        val guardarButton = findViewById<Button>(R.id.guardarButton)
+        // Infla el layout del diálogo
+        val dialogView = layoutInflater.inflate(R.layout.dialog_add_reminder, null)
 
-        // Selector de fecha para vencimiento
+        // Obtiene las vistas desde el layout inflado del diálogo
+        val tituloEditText = dialogView.findViewById<EditText>(R.id.tituloEditText)
+        val descripcionEditText = dialogView.findViewById<EditText>(R.id.descripcionEditText)
+        val recordatorioEditText = dialogView.findViewById<EditText>(R.id.recordatorioEditText)
+        val vencimientoEditText = dialogView.findViewById<EditText>(R.id.vencimientoEditText)
+        val guardarButton = dialogView.findViewById<Button>(R.id.guardarButton)
+
+        // Crea el diálogo con el layout personalizado
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        dialog.show()
+
+        // Configura el selector de fecha para vencimiento
         vencimientoEditText.setOnClickListener {
             showDatePicker { timestamp, formattedDate ->
                 vencimientoTimestamp = timestamp
@@ -51,7 +64,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Selector de fecha y hora para recordatorio
+        // Configura el selector de fecha y hora para recordatorio
         recordatorioEditText.setOnClickListener {
             showDateTimePicker { timestamp, formattedDateTime ->
                 recordatorioTimestamp = timestamp
@@ -67,6 +80,7 @@ class MainActivity : AppCompatActivity() {
                 recordatorioEditText,
                 vencimientoEditText
             )
+            dialog.dismiss() // Cierra el diálogo al guardar
         }
     }
 
