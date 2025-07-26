@@ -10,10 +10,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import data.database.RecordatorioDatabase
 import data.database.entity.Recordatorio
 import kotlinx.coroutines.launch
 import java.util.Calendar
+
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         cargarRecordatorios()
 
         // Si tienes un botón para agregar, aquí puedes poner el listener:
-        val agregarButton = findViewById<Button>(R.id.dialogButton)
+        val agregarButton = findViewById<FloatingActionButton>(R.id.dialogButton)
         agregarButton.setOnClickListener {
             mostrarDialogoAgregarRecordatorio()
         }
