@@ -2,11 +2,13 @@ package com.example.remindwatch
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,6 +16,8 @@ import data.database.RecordatorioDatabase
 import data.database.entity.Recordatorio
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,15 +30,39 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, true)
         setContentView(R.layout.activity_main)
 
-        // Inicializa la base de datos
-        db = RecordatorioDatabase.getDatabase(this)
+        val button5 = findViewById<Button>(R.id.button5)
+        val button6 = findViewById<Button>(R.id.button6)
+        val button7 = findViewById<Button>(R.id.button7)
 
-        // Inicializa la interfaz y el RecyclerView
-        inicializarUI()
+        button5.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+
+        button6.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+
+        button7.setOnClickListener {
+            val intent = Intent(this, ExpiradosActivity::class.java)
+            startActivity(intent)
+        }
+
+
+        db = RecordatorioDatabase.getDatabase(this)
         cargarRecordatorios()
+
+        // Botón para abrir el diálogo
+        val btnAgregar = findViewById<FloatingActionButton>(R.id.btnAgregar)
+        btnAgregar.setOnClickListener {
+            inicializarUI()
+        }
     }
+
 
     // Configura los elementos de la interfaz y sus listeners
     private fun inicializarUI() {
@@ -154,5 +182,62 @@ class MainActivity : AppCompatActivity() {
                 onDateTimeSelected(cal.timeInMillis, formattedDateTime)
             }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
         }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+    }
+}
+
+class ExpiradosActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, true)
+        setContentView(R.layout.activity_expirados)
+
+        val button5 = findViewById<Button>(R.id.button5)
+        val button6 = findViewById<Button>(R.id.button6)
+        val button7 = findViewById<Button>(R.id.button7)
+
+        button5.setOnClickListener {
+            val intent = Intent(this, CompletadosActivity::class.java)
+            startActivity(intent)
+        }
+
+        button6.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+
+        button7.setOnClickListener {
+            val intent = Intent(this, ExpiradosActivity::class.java)
+            startActivity(intent)
+        }
+
+    }
+}
+
+class CompletadosActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, true)
+        setContentView(R.layout.activity_completados)
+
+        val button5 = findViewById<Button>(R.id.button5)
+        val button6 = findViewById<Button>(R.id.button6)
+        val button7 = findViewById<Button>(R.id.button7)
+
+        button5.setOnClickListener {
+            val intent = Intent(this, CompletadosActivity::class.java)
+            startActivity(intent)
+        }
+
+        button6.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+
+        button7.setOnClickListener {
+            val intent = Intent(this, ExpiradosActivity::class.java)
+            startActivity(intent)
+        }
+
+
     }
 }
