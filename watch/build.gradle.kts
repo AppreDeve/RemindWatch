@@ -60,4 +60,7 @@ dependencies {
     // Coroutines para asincronía
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
+    // Core KTX para soporte de ComponentActivity y utilidades esenciales
+    implementation("androidx.core:core-ktx:1.12.0")
 }
