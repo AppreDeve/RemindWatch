@@ -10,18 +10,22 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+
+import com.example.remindwatch.sync.RecordatorioSynchronizer
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import data.database.RecordatorioDatabase
 import data.database.entity.Recordatorio
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-
-
 class MainActivity : AppCompatActivity() {
 
     // Instancia de la base de datos Room
     private lateinit var db: RecordatorioDatabase
+
+    // Instancia del sincronizador con el reloj
+    private lateinit var synchronizer: RecordatorioSynchronizer
 
     // Timestamps para los campos de fecha y hora
     private var recordatorioTimestamp: Long = 0L
@@ -34,9 +38,15 @@ class MainActivity : AppCompatActivity() {
         // Inicializa la base de datos
         db = RecordatorioDatabase.getDatabase(this)
 
+        // Inicializa el sincronizador
+        synchronizer = RecordatorioSynchronizer(this)
+
         // Inicializa la interfaz y el RecyclerView
         inicializarUI()
         cargarRecordatorios()
+
+        // Sincroniza todos los recordatorios al iniciar
+        sincronizarTodosLosRecordatorios()
     }
 
     // Configura los elementos de la interfaz y sus listeners
@@ -50,6 +60,7 @@ class MainActivity : AppCompatActivity() {
             mostrarDialogoAgregarRecordatorio()
         }
     }
+
     // Muestra el diálogo para agregar un nuevo recordatorio
     private fun mostrarDialogoAgregarRecordatorio() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_reminder, null)
@@ -94,7 +105,14 @@ class MainActivity : AppCompatActivity() {
     // Carga los recordatorios desde la base de datos y los muestra en el RecyclerView
     private fun cargarRecordatorios() {
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewRecordatorios)
-        val adapter = RecordatorioAdapter()
+        val adapter = RecordatorioAdapter(
+            onDeleteClick = { recordatorio ->
+                eliminarRecordatorio(recordatorio)
+            },
+            onEditClick = { recordatorio ->
+                editarRecordatorio(recordatorio)
+            }
+        )
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -124,7 +142,15 @@ class MainActivity : AppCompatActivity() {
             )
 
             lifecycleScope.launch {
-                db.recordatorioDao().insert(recordatorio)
+                // Insertar en la base de datos local
+                val id = db.recordatorioDao().insert(recordatorio)
+
+                // Obtener el recordatorio con el ID asignado
+                val recordatorioConId = recordatorio.copy(id = id.toInt())
+
+                // Sincronizar con el reloj
+                synchronizer.syncCreatedRecordatorio(recordatorioConId)
+
                 cargarRecordatorios() // Actualiza la lista
             }
 
@@ -137,6 +163,36 @@ class MainActivity : AppCompatActivity() {
             ).forEach {
                 it.text.clear()
             }
+        }
+    }
+
+    // Función para eliminar un recordatorio
+    private fun eliminarRecordatorio(recordatorio: Recordatorio) {
+        lifecycleScope.launch {
+            // Eliminar de la base de datos local
+            db.recordatorioDao().delete(recordatorio)
+
+            // Sincronizar la eliminación con el reloj
+            synchronizer.syncDeletedRecordatorio(recordatorio.id)
+
+            cargarRecordatorios() // Actualiza la lista
+        }
+    }
+
+    // Función para editar un recordatorio existente
+    private fun editarRecordatorio(recordatorio: Recordatorio) {
+        // Aquí implementarías la lógica para mostrar un diálogo de edición
+        // y luego guardar los cambios. Al final, sincronizarías así:
+
+        // Ejemplo: Después de actualizar el recordatorio en la base de datos:
+        // synchronizer.syncUpdatedRecordatorio(recordatorioActualizado)
+    }
+
+    // Función para sincronizar todos los recordatorios con el reloj
+    private fun sincronizarTodosLosRecordatorios() {
+        lifecycleScope.launch {
+            val recordatorios = db.recordatorioDao().getAll()
+            synchronizer.syncAllRecordatorios(recordatorios)
         }
     }
 

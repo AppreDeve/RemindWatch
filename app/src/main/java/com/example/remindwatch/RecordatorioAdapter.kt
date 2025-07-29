@@ -13,15 +13,18 @@ import data.database.entity.Recordatorio
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import android.widget.ImageButton
 
-class RecordatorioAdapter :
-    ListAdapter<Recordatorio, RecordatorioAdapter.ViewHolder>(DIFF_CALLBACK) {
+class RecordatorioAdapter(
+    private val onDeleteClick: (Recordatorio) -> Unit = {},
+    private val onEditClick: (Recordatorio) -> Unit = {}
+) : ListAdapter<Recordatorio, RecordatorioAdapter.ViewHolder>(DIFF_CALLBACK) {
 
     // Crea una nueva vista para cada elemento de la lista
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_reminder, parent, false)
-        return ViewHolder(view)
+        return ViewHolder(view, onDeleteClick, onEditClick)
     }
 
     // Asocia los datos del recordatorio con la vista
@@ -31,7 +34,11 @@ class RecordatorioAdapter :
     }
 
     // ViewHolder para manejar la vista de cada recordatorio
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ViewHolder(
+        itemView: View,
+        private val onDeleteClick: (Recordatorio) -> Unit,
+        private val onEditClick: (Recordatorio) -> Unit
+    ) : RecyclerView.ViewHolder(itemView) {
         fun bind(recordatorio: Recordatorio) {
             // Formatea la fecha y hora del recordatorio
             val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
@@ -60,6 +67,15 @@ class RecordatorioAdapter :
                 recordatorioTextView.visibility = View.VISIBLE
             } else {
                 recordatorioTextView.visibility = View.GONE
+            }
+
+            // Configurar botones de editar y eliminar
+            itemView.findViewById<ImageButton>(R.id.deleteButton)?.setOnClickListener {
+                onDeleteClick(recordatorio)
+            }
+
+            itemView.findViewById<ImageButton>(R.id.editButton)?.setOnClickListener {
+                onEditClick(recordatorio)
             }
         }
 
