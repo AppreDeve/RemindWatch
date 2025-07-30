@@ -53,7 +53,7 @@
         android:layout_margin="5dp"
         android:contentDescription="Actualizar"
         android:src="@drawable/baseline_sync_24"
-        app:backgroundTint="@color/design_default_color_primary" />
+        />
 
     <ImageButton
         android:id="@+id/btn_list"
@@ -64,7 +64,7 @@
         android:layout_marginTop="30dp"
         android:contentDescription="Añadir"
         android:src="@drawable/baseline_format_list"
-        app:backgroundTint="@color/design_default_color_primary" />
+         />
 
 
     <ImageButton
@@ -76,6 +76,6 @@
         android:layout_marginTop="30dp"
         android:contentDescription="Añadir"
         android:src="@drawable/baseline_add_24"
-        app:rippleColor="#992323"/>
+        />
 
 </androidx.wear.widget.BoxInsetLayout>
