@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <EditText
+                android:id="@+id/tituloEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="username"
+                android:hint="Título"
+                android:inputType="textPersonName"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/vencimientoEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="date"
+                android:hint="Vencimiento"
+                android:inputType="datetime"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/recordatorioEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="dateTime"
+                android:hint="Recordatorio"
+                android:inputType="datetime"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/descripcionEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="description"
+                android:hint="Descripción del recordatorio"
+                android:inputType="textMultiLine"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/guardarButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Actualizar" />
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
+
