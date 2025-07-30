@@ -1,72 +1,52 @@
-/* While this template provides a good starting point for using Wear Compose, you can always
- * take a look at https://github.com/android/wear-os-samples/tree/main/ComposeStarter to find the
- * most up to date changes to the libraries and their usages.
- */
-
 package com.example.watch.presentation
 
 import android.os.Bundle
+import android.view.View
+import android.widget.TextView
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.Text
-import androidx.wear.compose.material.TimeText
-import androidx.wear.tooling.preview.devices.WearDevices
+import androidx.recyclerview.widget.RecyclerView
+import androidx.wear.widget.WearableRecyclerView
 import com.example.watch.R
-import com.example.watch.presentation.theme.RemindWatchTheme
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
+
+    private val viewModel: RecordatorioViewModel by viewModel()
+    private lateinit var adapter: RecordatorioAdapter
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var emptyView: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
-
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        setTheme(android.R.style.Theme_DeviceDefault)
+        // Inicializar vistas
+        recyclerView = findViewById(R.id.recordatorios_list)
+        emptyView = findViewById(R.id.empty_view)
 
-        setContent {
-            WearApp("Android")
+        // Configurar el adaptador
+        adapter = RecordatorioAdapter()
+        recyclerView.adapter = adapter
+
+        // Observar los cambios en los recordatorios
+        viewModel.recordatorios.observe(this) { recordatorios ->
+            if (recordatorios.isNotEmpty()) {
+                adapter.setRecordatorios(recordatorios)
+                recyclerView.visibility = View.VISIBLE
+                emptyView.visibility = View.GONE
+            } else {
+                recyclerView.visibility = View.GONE
+                emptyView.visibility = View.VISIBLE
+            }
         }
+
+        // Cargar los datos
+        viewModel.loadRecordatorios()
     }
-}
 
-@Composable
-fun WearApp(greetingName: String) {
-    RemindWatchTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colors.background),
-            contentAlignment = Alignment.Center
-        ) {
-            TimeText()
-            Greeting(greetingName = greetingName)
-        }
+    override fun onResume() {
+        super.onResume()
+        // Recargar los datos cuando la actividad vuelva a primer plano
+        viewModel.loadRecordatorios()
     }
-}
-
-@Composable
-fun Greeting(greetingName: String) {
-    Text(
-        modifier = Modifier.fillMaxWidth(),
-        textAlign = TextAlign.Center,
-        color = MaterialTheme.colors.primary,
-        text = stringResource(R.string.hello_world, greetingName)
-    )
-}
-
-@Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
-@Composable
-fun DefaultPreview() {
-    WearApp("Preview Android")
 }

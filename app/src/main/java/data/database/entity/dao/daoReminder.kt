@@ -10,7 +10,7 @@ import data.database.entity.Recordatorio
         // Por ejemplo, insertar, actualizar, eliminar y consultar recordatorios.
         // Ejemplo:
          @Insert
-         suspend fun insert(recordatorio: Recordatorio)
+         suspend fun insert(recordatorio: Recordatorio): Long
 
         @Query("SELECT * FROM Recordatorios")
         suspend fun getAll(): List<Recordatorio>
@@ -20,4 +20,7 @@ import data.database.entity.Recordatorio
 
         @Delete
         suspend fun delete(recordatorio: Recordatorio)
-    }
+
+        @Query("DELETE FROM Recordatorios WHERE id = :id")
+        suspend fun deleteById(id: Int)
+}

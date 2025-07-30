@@ -2,29 +2,30 @@ package com.example.remindwatch
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+
+import com.example.remindwatch.sync.RecordatorioSynchronizer
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import data.database.RecordatorioDatabase
 import data.database.entity.Recordatorio
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-
-
-
 
 class MainActivity : AppCompatActivity() {
 
     // Instancia de la base de datos Room
     private lateinit var db: RecordatorioDatabase
+
+    // Instancia del sincronizador con el reloj
+    private lateinit var synchronizer: RecordatorioSynchronizer
 
     // Timestamps para los campos de fecha y hora
     private var recordatorioTimestamp: Long = 0L
@@ -32,39 +33,21 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, true)
         setContentView(R.layout.activity_main)
 
-        val button5 = findViewById<Button>(R.id.button5)
-        val button6 = findViewById<Button>(R.id.button6)
-        val button7 = findViewById<Button>(R.id.button7)
-
-        button6.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-        }
-
-        button5.setOnClickListener {
-            val intent = Intent(this, CompletadosActivity::class.java)
-            startActivity(intent)
-        }
-
-        button7.setOnClickListener {
-            val intent = Intent(this, ExpiradosActivity::class.java)
-            startActivity(intent)
-        }
-
-
+        // Inicializa la base de datos
         db = RecordatorioDatabase.getDatabase(this)
+
+        // Inicializa el sincronizador
+        synchronizer = RecordatorioSynchronizer(this)
+
+        // Inicializa la interfaz y el RecyclerView
+        inicializarUI()
         cargarRecordatorios()
 
-        // Botón para abrir el diálogo
-        val btnAgregar = findViewById<FloatingActionButton>(R.id.floatingActionButton)
-        btnAgregar.setOnClickListener {
-            inicializarUI()
-        }
+        // Sincroniza todos los recordatorios al iniciar
+        sincronizarTodosLosRecordatorios()
     }
-
 
     // Configura los elementos de la interfaz y sus listeners
     private fun inicializarUI() {
@@ -72,11 +55,12 @@ class MainActivity : AppCompatActivity() {
         cargarRecordatorios()
 
         // Si tienes un botón para agregar, aquí puedes poner el listener:
-        val agregarButton = findViewById<FloatingActionButton>(R.id.floatingActionButton)
+        val agregarButton = findViewById<FloatingActionButton>(R.id.dialogButton)
         agregarButton.setOnClickListener {
             mostrarDialogoAgregarRecordatorio()
         }
     }
+
     // Muestra el diálogo para agregar un nuevo recordatorio
     private fun mostrarDialogoAgregarRecordatorio() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_reminder, null)
@@ -120,33 +104,15 @@ class MainActivity : AppCompatActivity() {
 
     // Carga los recordatorios desde la base de datos y los muestra en el RecyclerView
     private fun cargarRecordatorios() {
-
-        fun eliminarRecordatorio(recordatorio: Recordatorio) {
-            // Elimina de tu lista y notifica cambios al adapter
-            lifecycleScope.launch {
-                db.recordatorioDao().delete(recordatorio)
-                cargarRecordatorios() // Actualiza la lista
-            }
-        }
-
-        fun actualizarCompletado(recordatorio: Recordatorio, completado: Boolean) {
-            // Actualiza la propiedad y guarda en base de datos o lista
-
-        }
-
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewRecordatorios)
         val adapter = RecordatorioAdapter(
-            onEliminarClick = { recordatorio ->
-                // Eliminar de la base de datos o lista
+            onDeleteClick = { recordatorio ->
                 eliminarRecordatorio(recordatorio)
             },
-            onCompletadoChange = { recordatorio, completado ->
-                // Actualizar el estado completado en la base de datos o lista
-                actualizarCompletado(recordatorio, completado)
+            onEditClick = { recordatorio ->
+                editarRecordatorio(recordatorio)
             }
         )
-
-        recyclerView.adapter = adapter
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -176,7 +142,15 @@ class MainActivity : AppCompatActivity() {
             )
 
             lifecycleScope.launch {
-                db.recordatorioDao().insert(recordatorio)
+                // Insertar en la base de datos local
+                val id = db.recordatorioDao().insert(recordatorio)
+
+                // Obtener el recordatorio con el ID asignado
+                val recordatorioConId = recordatorio.copy(id = id.toInt())
+
+                // Sincronizar con el reloj
+                synchronizer.syncCreatedRecordatorio(recordatorioConId)
+
                 cargarRecordatorios() // Actualiza la lista
             }
 
@@ -189,6 +163,36 @@ class MainActivity : AppCompatActivity() {
             ).forEach {
                 it.text.clear()
             }
+        }
+    }
+
+    // Función para eliminar un recordatorio
+    private fun eliminarRecordatorio(recordatorio: Recordatorio) {
+        lifecycleScope.launch {
+            // Eliminar de la base de datos local
+            db.recordatorioDao().delete(recordatorio)
+
+            // Sincronizar la eliminación con el reloj
+            synchronizer.syncDeletedRecordatorio(recordatorio.id)
+
+            cargarRecordatorios() // Actualiza la lista
+        }
+    }
+
+    // Función para editar un recordatorio existente
+    private fun editarRecordatorio(recordatorio: Recordatorio) {
+        // Aquí implementarías la lógica para mostrar un diálogo de edición
+        // y luego guardar los cambios. Al final, sincronizarías así:
+
+        // Ejemplo: Después de actualizar el recordatorio en la base de datos:
+        // synchronizer.syncUpdatedRecordatorio(recordatorioActualizado)
+    }
+
+    // Función para sincronizar todos los recordatorios con el reloj
+    private fun sincronizarTodosLosRecordatorios() {
+        lifecycleScope.launch {
+            val recordatorios = db.recordatorioDao().getAll()
+            synchronizer.syncAllRecordatorios(recordatorios)
         }
     }
 
@@ -213,62 +217,5 @@ class MainActivity : AppCompatActivity() {
                 onDateTimeSelected(cal.timeInMillis, formattedDateTime)
             }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
         }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
-    }
-}
-
-class ExpiradosActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, true)
-        setContentView(R.layout.activity_expirados)
-
-        val button5 = findViewById<Button>(R.id.button5)
-        val button6 = findViewById<Button>(R.id.button6)
-        val button7 = findViewById<Button>(R.id.button7)
-
-        button6.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-        }
-
-        button5.setOnClickListener {
-            val intent = Intent(this, CompletadosActivity::class.java)
-            startActivity(intent)
-        }
-
-        button7.setOnClickListener {
-            val intent = Intent(this, ExpiradosActivity::class.java)
-            startActivity(intent)
-        }
-
-    }
-}
-
-class CompletadosActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, true)
-        setContentView(R.layout.activity_completados)
-
-        val button5 = findViewById<Button>(R.id.button5)
-        val button6 = findViewById<Button>(R.id.button6)
-        val button7 = findViewById<Button>(R.id.button7)
-
-        button6.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-        }
-
-        button5.setOnClickListener {
-            val intent = Intent(this, CompletadosActivity::class.java)
-            startActivity(intent)
-        }
-
-        button7.setOnClickListener {
-            val intent = Intent(this, ExpiradosActivity::class.java)
-            startActivity(intent)
-        }
-
-
     }
 }
