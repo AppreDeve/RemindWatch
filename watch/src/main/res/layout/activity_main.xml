@@ -8,25 +8,74 @@
     tools:context=".presentation.MainActivity"
     tools:deviceIds="wear">
 
-    <FrameLayout
+    <!-- Título en la parte superior -->
+    <TextView
+        android:id="@+id/title_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:paddingBottom="8dp"
+        android:text="RemindWatch"
+        android:textAlignment="center"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+    <!-- Botón Listar en la esquina superior izquierda -->
+
+    <!-- Botón Agregar en la esquina superior derecha -->
+
+    <!-- Lista de recordatorios ajustada -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recordatorios_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp">
+        android:layout_gravity="center"
+        android:layout_marginTop="60dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical"
+        android:visibility="visible"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recordatorios_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+    <TextView
+        android:id="@+id/empty_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="No hay recordatorios"
+        android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/empty_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="No hay recordatorios"
-            android:visibility="gone" />
+    <!-- Botón flotante de actualizar en la parte inferior derecha -->
+    <ImageButton
+        android:id="@+id/btn_update"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="5dp"
+        android:contentDescription="Actualizar"
+        android:src="@drawable/baseline_sync_24"
+        app:backgroundTint="@color/design_default_color_primary" />
 
-    </FrameLayout>
+    <ImageButton
+        android:id="@+id/btn_list"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="bottom|fill"
+        android:layout_marginLeft="34dp"
+        android:layout_marginTop="30dp"
+        android:contentDescription="Añadir"
+        android:src="@drawable/baseline_format_list"
+        app:backgroundTint="@color/design_default_color_primary" />
+
+
+    <ImageButton
+        android:id="@+id/btn_add"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="bottom|fill_vertical"
+        android:layout_marginLeft="100dp"
+        android:layout_marginTop="30dp"
+        android:contentDescription="Añadir"
+        android:src="@drawable/baseline_add_24"
+        app:rippleColor="#992323"/>
+
 </androidx.wear.widget.BoxInsetLayout>
