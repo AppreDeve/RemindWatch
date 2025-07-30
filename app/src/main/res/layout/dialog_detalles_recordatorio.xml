@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- TextView con detalles -->
+    <TextView
+        android:id="@+id/textDetalles"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Detalles"
+        android:textSize="16sp"
+        android:paddingBottom="16dp"/>
+
+    <!-- Contenedor horizontal para checkbox y botón -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="8dp"
+        android:weightSum="2">
+
+        <CheckBox
+            android:id="@+id/checkCompletadoDialog"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Completado"
+            android:checked="false"/>
+
+        <ImageButton
+            android:id="@+id/btnEliminarDialog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_delete"
+            android:contentDescription="Eliminar recordatorio"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            card_view:tint="@android:color/holo_red_dark" />
+
+    </LinearLayout>
+</LinearLayout>

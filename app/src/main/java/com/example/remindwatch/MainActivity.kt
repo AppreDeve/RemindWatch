@@ -12,7 +12,6 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import data.database.RecordatorioDatabase
 import data.database.entity.Recordatorio
 import kotlinx.coroutines.launch
@@ -40,13 +39,13 @@ class MainActivity : AppCompatActivity() {
         val button6 = findViewById<Button>(R.id.button6)
         val button7 = findViewById<Button>(R.id.button7)
 
-        button5.setOnClickListener {
+        button6.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
 
-        button6.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
+        button5.setOnClickListener {
+            val intent = Intent(this, CompletadosActivity::class.java)
             startActivity(intent)
         }
 
@@ -60,7 +59,7 @@ class MainActivity : AppCompatActivity() {
         cargarRecordatorios()
 
         // Botón para abrir el diálogo
-        val btnAgregar = findViewById<FloatingActionButton>(R.id.btnAgregar)
+        val btnAgregar = findViewById<FloatingActionButton>(R.id.floatingActionButton)
         btnAgregar.setOnClickListener {
             inicializarUI()
         }
@@ -73,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         cargarRecordatorios()
 
         // Si tienes un botón para agregar, aquí puedes poner el listener:
-        val agregarButton = findViewById<FloatingActionButton>(R.id.dialogButton)
+        val agregarButton = findViewById<FloatingActionButton>(R.id.floatingActionButton)
         agregarButton.setOnClickListener {
             mostrarDialogoAgregarRecordatorio()
         }
@@ -121,8 +120,33 @@ class MainActivity : AppCompatActivity() {
 
     // Carga los recordatorios desde la base de datos y los muestra en el RecyclerView
     private fun cargarRecordatorios() {
+
+        fun eliminarRecordatorio(recordatorio: Recordatorio) {
+            // Elimina de tu lista y notifica cambios al adapter
+            lifecycleScope.launch {
+                db.recordatorioDao().delete(recordatorio)
+                cargarRecordatorios() // Actualiza la lista
+            }
+        }
+
+        fun actualizarCompletado(recordatorio: Recordatorio, completado: Boolean) {
+            // Actualiza la propiedad y guarda en base de datos o lista
+
+        }
+
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewRecordatorios)
-        val adapter = RecordatorioAdapter()
+        val adapter = RecordatorioAdapter(
+            onEliminarClick = { recordatorio ->
+                // Eliminar de la base de datos o lista
+                eliminarRecordatorio(recordatorio)
+            },
+            onCompletadoChange = { recordatorio, completado ->
+                // Actualizar el estado completado en la base de datos o lista
+                actualizarCompletado(recordatorio, completado)
+            }
+        )
+
+        recyclerView.adapter = adapter
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -202,13 +226,13 @@ class ExpiradosActivity : AppCompatActivity() {
         val button6 = findViewById<Button>(R.id.button6)
         val button7 = findViewById<Button>(R.id.button7)
 
-        button5.setOnClickListener {
-            val intent = Intent(this, CompletadosActivity::class.java)
+        button6.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
 
-        button6.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
+        button5.setOnClickListener {
+            val intent = Intent(this, CompletadosActivity::class.java)
             startActivity(intent)
         }
 
@@ -230,13 +254,13 @@ class CompletadosActivity : AppCompatActivity() {
         val button6 = findViewById<Button>(R.id.button6)
         val button7 = findViewById<Button>(R.id.button7)
 
-        button5.setOnClickListener {
-            val intent = Intent(this, CompletadosActivity::class.java)
+        button6.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
 
-        button6.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
+        button5.setOnClickListener {
+            val intent = Intent(this, CompletadosActivity::class.java)
             startActivity(intent)
         }
 
