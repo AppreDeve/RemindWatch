@@ -6,14 +6,56 @@
     android:orientation="vertical"
     android:padding="24dp">
 
-    <!-- TextView con detalles -->
-    <TextView
-        android:id="@+id/textDetalles"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Detalles"
-        android:textSize="16sp"
-        android:paddingBottom="16dp"/>
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/tituloEditText"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:hint="Título"
+            android:inputType="textPersonName"
+            android:autofillHints="username"
+            android:textStyle="bold"
+            android:textSize="25sp" />
+
+        <RadioButton
+            android:id="@+id/radioButton2"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:contentDescription="Seleccionar"/>
+    </LinearLayout>
+
+
+    <EditText
+        android:id="@+id/vencimientoEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Vencimiento"
+        android:inputType="datetime"
+        android:autofillHints="date"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/recordatorioEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Recordatorio"
+        android:inputType="datetime"
+        android:autofillHints="dateTime"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/descripcionEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Descripción del recordatorio"
+        android:inputType="textMultiLine"
+        android:autofillHints="description"
+        android:textSize="16sp" />
 
     <!-- Contenedor horizontal para checkbox y botón -->
     <LinearLayout
@@ -24,13 +66,7 @@
         android:paddingTop="8dp"
         android:weightSum="2">
 
-        <CheckBox
-            android:id="@+id/checkCompletadoDialog"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Completado"
-            android:checked="false"/>
+
 
         <ImageButton
             android:id="@+id/btnEliminarDialog"
@@ -42,4 +78,8 @@
             card_view:tint="@android:color/holo_red_dark" />
 
     </LinearLayout>
+
+
+
+
 </LinearLayout>
