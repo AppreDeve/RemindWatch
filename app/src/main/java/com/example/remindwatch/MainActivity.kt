@@ -12,11 +12,14 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import data.database.RecordatorioDatabase
 import data.database.entity.Recordatorio
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -66,17 +69,24 @@ class MainActivity : AppCompatActivity() {
 
     // Configura los elementos de la interfaz y sus listeners
     private fun inicializarUI() {
-        // Infla el layout del diálogo
-        val dialogView = layoutInflater.inflate(R.layout.dialog_add_reminder, null)
+        // Solo inicializa el RecyclerView y carga los recordatorios
+        cargarRecordatorios()
 
-        // Obtiene las vistas desde el layout inflado del diálogo
+        // Si tienes un botón para agregar, aquí puedes poner el listener:
+        val agregarButton = findViewById<FloatingActionButton>(R.id.dialogButton)
+        agregarButton.setOnClickListener {
+            mostrarDialogoAgregarRecordatorio()
+        }
+    }
+    // Muestra el diálogo para agregar un nuevo recordatorio
+    private fun mostrarDialogoAgregarRecordatorio() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_add_reminder, null)
         val tituloEditText = dialogView.findViewById<EditText>(R.id.tituloEditText)
         val descripcionEditText = dialogView.findViewById<EditText>(R.id.descripcionEditText)
         val recordatorioEditText = dialogView.findViewById<EditText>(R.id.recordatorioEditText)
         val vencimientoEditText = dialogView.findViewById<EditText>(R.id.vencimientoEditText)
         val guardarButton = dialogView.findViewById<Button>(R.id.guardarButton)
 
-        // Crea el diálogo con el layout personalizado
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .setCancelable(true)
@@ -84,7 +94,6 @@ class MainActivity : AppCompatActivity() {
 
         dialog.show()
 
-        // Configura el selector de fecha para vencimiento
         vencimientoEditText.setOnClickListener {
             showDatePicker { timestamp, formattedDate ->
                 vencimientoTimestamp = timestamp
@@ -92,7 +101,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Configura el selector de fecha y hora para recordatorio
         recordatorioEditText.setOnClickListener {
             showDateTimePicker { timestamp, formattedDateTime ->
                 recordatorioTimestamp = timestamp
@@ -100,7 +108,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Acción al presionar el botón de guardar
         guardarButton.setOnClickListener {
             guardarRecordatorio(
                 tituloEditText,
@@ -108,7 +115,7 @@ class MainActivity : AppCompatActivity() {
                 recordatorioEditText,
                 vencimientoEditText
             )
-            dialog.dismiss() // Cierra el diálogo al guardar
+            dialog.dismiss()
         }
     }
 

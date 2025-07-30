@@ -78,13 +78,14 @@
 
     <!-- Botón flotante "+" -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btnAgregar"
+        android:id="@+id/floatingActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
         app:srcCompat="@android:drawable/ic_menu_add"
         tools:layout_editor_absoluteX="335dp"
         tools:layout_editor_absoluteY="650dp"
+        tools:ignore="MissingConstraints"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginEnd="15dp"
