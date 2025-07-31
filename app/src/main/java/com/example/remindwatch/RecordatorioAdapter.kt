@@ -17,14 +17,15 @@ import android.widget.ImageButton
 
 class RecordatorioAdapter(
     private val onDeleteClick: (Recordatorio) -> Unit = {},
-    private val onEditClick: (Recordatorio) -> Unit = {}
+    private val onEditClick: (Recordatorio) -> Unit = {},
+    private val onItemClick: (Recordatorio) -> Unit = {} // Nuevo parámetro para click en el item
 ) : ListAdapter<Recordatorio, RecordatorioAdapter.ViewHolder>(DIFF_CALLBACK) {
 
     // Crea una nueva vista para cada elemento de la lista
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_reminder, parent, false)
-        return ViewHolder(view, onDeleteClick, onEditClick)
+        return ViewHolder(view, onDeleteClick, onEditClick, onItemClick)
     }
 
     // Asocia los datos del recordatorio con la vista
@@ -37,7 +38,8 @@ class RecordatorioAdapter(
     class ViewHolder(
         itemView: View,
         private val onDeleteClick: (Recordatorio) -> Unit,
-        private val onEditClick: (Recordatorio) -> Unit
+        private val onEditClick: (Recordatorio) -> Unit,
+        private val onItemClick: (Recordatorio) -> Unit // Nuevo parámetro
     ) : RecyclerView.ViewHolder(itemView) {
         fun bind(recordatorio: Recordatorio) {
             // Formatea la fecha y hora del recordatorio
@@ -76,6 +78,11 @@ class RecordatorioAdapter(
 
             itemView.findViewById<ImageButton>(R.id.editButton)?.setOnClickListener {
                 onEditClick(recordatorio)
+            }
+
+            // Listener para click en todo el item
+            itemView.setOnClickListener {
+                onItemClick(recordatorio)
             }
         }
 
