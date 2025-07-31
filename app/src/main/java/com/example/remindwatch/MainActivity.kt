@@ -111,6 +111,9 @@ class MainActivity : AppCompatActivity() {
             },
             onEditClick = { recordatorio ->
                 editarRecordatorio(recordatorio)
+            },
+            onItemClick = { recordatorio ->
+                editarRecordatorio(recordatorio)
             }
         )
         recyclerView.adapter = adapter
@@ -181,11 +184,63 @@ class MainActivity : AppCompatActivity() {
 
     // Función para editar un recordatorio existente
     private fun editarRecordatorio(recordatorio: Recordatorio) {
-        // Aquí implementarías la lógica para mostrar un diálogo de edición
-        // y luego guardar los cambios. Al final, sincronizarías así:
+        val dialogView = layoutInflater.inflate(R.layout.dialog_detalles_recordatorio, null)
 
-        // Ejemplo: Después de actualizar el recordatorio en la base de datos:
-        // synchronizer.syncUpdatedRecordatorio(recordatorioActualizado)
+        val tituloEditText = dialogView.findViewById<EditText>(R.id.tituloEditText)
+        val descripcionEditText = dialogView.findViewById<EditText>(R.id.descripcionEditText)
+        val vencimientoEditText = dialogView.findViewById<EditText>(R.id.vencimientoEditText)
+        val recordatorioEditText = dialogView.findViewById<EditText>(R.id.recordatorioEditText)
+
+        // Variables para almacenar los nuevos valores de timestamp
+        var nuevoVencimiento = recordatorio.vencimiento ?: 0L
+        var nuevoRecordatorio = recordatorio.recordatorio ?: 0L
+
+        // Rellenar los campos con los datos actuales
+        tituloEditText.setText(recordatorio.titulo)
+        descripcionEditText.setText(recordatorio.descripcion)
+        if (nuevoVencimiento != 0L) {
+            vencimientoEditText.setText(android.text.format.DateFormat.format("yyyy-MM-dd", nuevoVencimiento))
+        }
+        if (nuevoRecordatorio != 0L) {
+            recordatorioEditText.setText(android.text.format.DateFormat.format("yyyy-MM-dd HH:mm", nuevoRecordatorio))
+        }
+
+        // Al hacer click en los campos de fecha, mostrar el selector
+        vencimientoEditText.setOnClickListener {
+            showDatePicker { timestamp, formattedDate ->
+                nuevoVencimiento = timestamp
+                vencimientoEditText.setText(formattedDate)
+            }
+        }
+        recordatorioEditText.setOnClickListener {
+            showDateTimePicker { timestamp, formattedDateTime ->
+                nuevoRecordatorio = timestamp
+                recordatorioEditText.setText(formattedDateTime)
+            }
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Editar recordatorio")
+            .setView(dialogView)
+            .setPositiveButton("Guardar") { _, _ ->
+                val nuevoTitulo = tituloEditText.text.toString()
+                val nuevaDescripcion = descripcionEditText.text.toString()
+                val recordatorioActualizado = recordatorio.copy(
+                    titulo = nuevoTitulo,
+                    descripcion = nuevaDescripcion,
+                    vencimiento = nuevoVencimiento,
+                    recordatorio = nuevoRecordatorio
+                )
+                lifecycleScope.launch {
+                    db.recordatorioDao().update(recordatorioActualizado)
+                    synchronizer.syncUpdatedRecordatorio(recordatorioActualizado)
+                    cargarRecordatorios()
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .create()
+
+        dialog.show()
     }
 
     // Función para sincronizar todos los recordatorios con el reloj
