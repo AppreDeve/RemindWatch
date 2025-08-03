@@ -1,0 +1,4 @@
+<resources>
+
+    <style name="Theme.RemindWatch" parent="Theme.AppCompat.DayNight.NoActionBar" />
+</resources>

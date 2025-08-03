@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "RemindWatch"
 include(":app")
 include(":watch")
+include(":smarttv")

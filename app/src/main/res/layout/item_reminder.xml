@@ -5,7 +5,8 @@
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     card_view:cardCornerRadius="12dp"
-    card_view:cardElevation="6dp">
+    card_view:cardElevation="6dp"
+    android:backgroundTint="@android:color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,68 +14,77 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Título destacado -->
         <TextView
             android:id="@+id/tituloTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Título del recordatorio"
             android:textStyle="bold"
-            android:textSize="18sp" />
+            android:textSize="26sp"
+            android:textColor="#212121" />
 
+        <!-- Descripción -->
         <TextView
             android:id="@+id/descripcionTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Descripción del recordatorio"
-            android:textSize="16sp" />
+            android:textSize="22sp"
+            android:textColor="#444444"
+            android:layout_marginTop="4dp" />
 
+        <!-- Fecha de vencimiento -->
         <TextView
             android:id="@+id/vencimientoTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Descripción del recordatorio"
-            android:textSize="16sp" />
+            android:text="Vence: 12/08/2025"
+            android:textSize="20sp"
+            android:textColor="#FF5722"
+            android:layout_marginTop="4dp" />
 
+        <!-- Detalles adicionales -->
         <TextView
-
             android:id="@+id/recordatorioTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Descripción del recordatorio"
-            android:textSize="16sp" />
+            android:text="Detalles adicionales..."
+            android:textSize="12sp"
+            android:textColor="#757575"
+            android:layout_marginTop="4dp" />
+
+        <!-- CheckBox para marcar el recordatorio como completado -->
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="end"
-            android:layout_marginTop="8dp">
+            android:gravity="start|center_vertical"
+            android:layout_marginTop="12dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
-            <ImageButton
-                android:id="@+id/editButton"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@android:color/transparent"
-                android:src="@android:drawable/ic_menu_edit"
-                android:contentDescription="Editar"
-                card_view:tint="@android:color/darker_gray" />
+            <CheckBox
+                android:id="@+id/completadoCheck"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="Marcar como completado" />
 
-
-            <ImageButton
-                android:id="@+id/deleteButton"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@android:color/transparent"
-                android:src="@android:drawable/ic_menu_delete"
-                android:contentDescription="Eliminar"
-                card_view:tint="@android:color/holo_red_dark" />
+            <TextView
+                android:id="@+id/completadoText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Marcar como completado"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:layout_marginStart="4dp"/>
         </LinearLayout>
-        <Button
-            android:id="@+id/btnVerMas"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ver más"
-            android:layout_marginTop="8dp"
-            android:layout_gravity="start" />
+
+
+        <!-- Botones de acción -->
+
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>

@@ -1,9 +1,5 @@
 package com.example.watch.presentation
 
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
@@ -26,7 +22,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.*
 
-class MainActivity : ComponentActivity(), SensorEventListener {
+class MainActivity : ComponentActivity() {
 
     private val viewModel: RecordatorioViewModel by viewModel()
     private lateinit var adapter: RecordatorioAdapter
