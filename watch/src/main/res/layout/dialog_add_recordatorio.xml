@@ -1,8 +1,8 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.wear.widget.BoxInsetLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:layout_height="match_parent"
+    android:background="#F5F5F5"
+    android:padding="8dp">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -11,41 +11,47 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:padding="20dp">
 
             <!-- Título -->
             <EditText
                 android:id="@+id/tituloEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:autofillHints="username"
                 android:hint="Título"
                 android:inputType="textPersonName"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 android:textStyle="bold"
-                android:layout_marginTop="0dp"/>
+                android:background="@drawable/edittext_fondo"
+                android:padding="8dp"
+                android:layout_marginBottom="8dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="#AAAAAA" />
 
+            <!-- Iconos horizontales -->
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="16dp"
-                android:gravity="start|center_vertical">
+                android:gravity="center"
+                android:layout_marginBottom="8dp">
 
                 <ImageView
                     android:id="@+id/iconoVencimiento"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:layout_marginEnd="16dp"
                     android:src="@drawable/ic_calendar"
-                    android:contentDescription="Seleccionar fecha de vencimiento"
+                    android:contentDescription="Seleccionar vencimiento"
                     android:clickable="true"
                     android:focusable="true" />
 
                 <ImageView
                     android:id="@+id/iconoRecordatorio"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:src="@drawable/ic_bell"
                     android:contentDescription="Seleccionar recordatorio"
                     android:clickable="true"
@@ -57,26 +63,28 @@
                 android:id="@+id/descripcionEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:autofillHints="description"
-                android:hint="Descripción del recordatorio"
+                android:hint="Descripción"
                 android:inputType="textMultiLine"
-                android:textSize="16sp"
-                android:layout_marginTop="12dp"/>
+                android:textSize="14sp"
+                android:background="@drawable/edittext_fondo"
+                android:padding="8dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="#AAAAAA" />
 
             <!-- Botón Guardar -->
             <Button
                 android:id="@+id/guardarButton"
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="24dp"
-                android:paddingStart="32dp"
-                android:paddingEnd="32dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="Guardar"
-                android:textColor="@android:color/white"
-                android:textSize="10sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
-                android:background="@android:color/holo_blue_dark"/>
+                android:textColor="@android:color/white"
+                android:backgroundTint="#601E8C"
+                android:minHeight="48dp"
+                android:minWidth="100dp" />
+
         </LinearLayout>
     </ScrollView>
-</LinearLayout>
+</androidx.wear.widget.BoxInsetLayout>
