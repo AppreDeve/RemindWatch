@@ -49,6 +49,17 @@ class MainActivity : AppCompatActivity() {
         sincronizarTodosLosRecordatorios()
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Forzar sincronización completa cuando la app vuelve a primer plano
+        // Esto ayuda a mantener sincronizados los dispositivos después de estar offline
+        lifecycleScope.launch {
+            // Pequeño delay para asegurar que la conexión esté establecida
+            kotlinx.coroutines.delay(1000)
+            synchronizer.forceSyncAll()
+        }
+    }
+
     // Configura los elementos de la interfaz y sus listeners
     private fun inicializarUI() {
         // Solo inicializa el RecyclerView y carga los recordatorios

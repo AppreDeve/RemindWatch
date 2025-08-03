@@ -41,5 +41,52 @@ object RecordatorioSyncHelper {
             }
         }
     }
-}
 
+    /**
+     * Notifica al móvil que el reloj se ha conectado y solicita sincronización completa
+     */
+    suspend fun notifyWatchConnected(context: Context) {
+        withContext(Dispatchers.IO) {
+            try {
+                val messageClient: MessageClient = Wearable.getMessageClient(context)
+                val nodeClient = Wearable.getNodeClient(context)
+                val nodes = Tasks.await(nodeClient.connectedNodes)
+                for (node in nodes) {
+                    val task = messageClient.sendMessage(
+                        node.id,
+                        "/watch_connected",
+                        ByteArray(0)
+                    )
+                    Tasks.await(task)
+                    Log.d(TAG, "Notificación de conexión del reloj enviada a: ${node.displayName}")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error al notificar conexión del reloj: ${e.message}", e)
+            }
+        }
+    }
+
+    /**
+     * Solicita una sincronización completa al móvil
+     */
+    suspend fun requestFullSync(context: Context) {
+        withContext(Dispatchers.IO) {
+            try {
+                val messageClient: MessageClient = Wearable.getMessageClient(context)
+                val nodeClient = Wearable.getNodeClient(context)
+                val nodes = Tasks.await(nodeClient.connectedNodes)
+                for (node in nodes) {
+                    val task = messageClient.sendMessage(
+                        node.id,
+                        "/request_full_sync",
+                        ByteArray(0)
+                    )
+                    Tasks.await(task)
+                    Log.d(TAG, "Solicitud de sincronización completa enviada a: ${node.displayName}")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error al solicitar sincronización completa: ${e.message}", e)
+            }
+        }
+    }
+}

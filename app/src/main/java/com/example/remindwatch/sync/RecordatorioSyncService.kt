@@ -12,7 +12,19 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 class RecordatorioSyncService : WearableListenerService() {
+
+    private val TAG = "RecordatorioSyncService"
+    private lateinit var syncManager: SyncManager
+
+    override fun onCreate() {
+        super.onCreate()
+        syncManager = SyncManager(applicationContext)
+        Log.d(TAG, "RecordatorioSyncService creado")
+    }
+
     override fun onMessageReceived(messageEvent: MessageEvent) {
+        Log.d(TAG, "Mensaje recibido en el path: ${messageEvent.path}")
+
         when (messageEvent.path) {
             "/sync_recordatorio" -> {
                 val data = String(messageEvent.data)
@@ -33,6 +45,18 @@ class RecordatorioSyncService : WearableListenerService() {
                     eliminarRecordatorio(applicationContext, id)
                 }
             }
+            "/request_full_sync" -> {
+                // El reloj solicita una sincronización completa
+                Log.d(TAG, "Solicitud de sincronización completa recibida desde el reloj")
+                CoroutineScope(Dispatchers.IO).launch {
+                    syncManager.syncCompleteState()
+                }
+            }
+            "/watch_connected" -> {
+                // El reloj se ha conectado
+                Log.d(TAG, "Reloj conectado, iniciando sincronización")
+                syncManager.onWearReconnected()
+            }
         }
     }
 
@@ -40,7 +64,7 @@ class RecordatorioSyncService : WearableListenerService() {
         CoroutineScope(Dispatchers.IO).launch {
             val db = RecordatorioDatabase.getDatabase(context)
             db.recordatorioDao().insert(recordatorio)
-            Log.d("RecordatorioSyncService", "Recordatorio guardado desde Wear: ${recordatorio.titulo}")
+            Log.d(TAG, "Recordatorio guardado desde Wear: ${recordatorio.titulo}")
         }
     }
 
@@ -48,8 +72,7 @@ class RecordatorioSyncService : WearableListenerService() {
         CoroutineScope(Dispatchers.IO).launch {
             val db = RecordatorioDatabase.getDatabase(context)
             db.recordatorioDao().deleteById(id)
-            Log.d("RecordatorioSyncService", "Recordatorio eliminado desde Wear: $id")
+            Log.d(TAG, "Recordatorio eliminado desde Wear: $id")
         }
     }
 }
-

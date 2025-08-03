@@ -35,8 +35,9 @@ class RecordatorioSyncService : WearableListenerService() {
 
         when (messageEvent.path) {
             "/sync_recordatorio" -> handleSingleRecordatorio(messageEvent)
-            "/sync_recordatorios_list" -> handleRecordatoriosList(messageEvent)
+            "/sync_recordatorios_list" -> handleRecordatoriosListReplacement(messageEvent)
             "/delete_recordatorio" -> handleDeleteRecordatorio(messageEvent)
+            "/mobile_connected" -> handleMobileConnected()
             else -> Log.d(TAG, "Path desconocido: ${messageEvent.path}")
         }
     }
@@ -49,7 +50,6 @@ class RecordatorioSyncService : WearableListenerService() {
             val json = JSONObject(data)
             val recordatorio = parseRecordatorioFromJson(json)
 
-            // Guardar en la base de datos en un hilo secundario
             CoroutineScope(Dispatchers.IO).launch {
                 recordatorioDao.insert(recordatorio)
                 Log.d(TAG, "Recordatorio guardado con éxito: ${recordatorio.id} - ${recordatorio.titulo}")
@@ -60,32 +60,37 @@ class RecordatorioSyncService : WearableListenerService() {
     }
 
     /**
-     * Procesa una lista de recordatorios recibida y los guarda en la base de datos.
-     * @param messageEvent Evento de mensaje recibido con los datos en formato JSON Array.
+     * Procesa una lista de recordatorios recibida y REEMPLAZA completamente el estado local.
+     * Esto asegura que el reloj tenga exactamente los mismos recordatorios que el móvil.
      */
-    private fun handleRecordatoriosList(messageEvent: MessageEvent) {
+    private fun handleRecordatoriosListReplacement(messageEvent: MessageEvent) {
         val data = String(messageEvent.data)
-        Log.d(TAG, "Lista de recordatorios recibida")
+        Log.d(TAG, "Lista de recordatorios para reemplazo recibida")
 
         try {
             val jsonArray = JSONArray(data)
-            val recordatorios = mutableListOf<Recordatorio>()
+            val recordatoriosNuevos = mutableListOf<Recordatorio>()
 
-            // Convierte cada objeto JSON en un Recordatorio y lo agrega a la lista
+            // Convierte cada objeto JSON en un Recordatorio
             for (i in 0 until jsonArray.length()) {
                 val json = jsonArray.getJSONObject(i)
-                recordatorios.add(parseRecordatorioFromJson(json))
+                recordatoriosNuevos.add(parseRecordatorioFromJson(json))
             }
 
-            // Guarda todos los recordatorios en la base de datos en un hilo secundario
+            // Reemplaza completamente el estado local
             CoroutineScope(Dispatchers.IO).launch {
-                recordatorios.forEach { recordatorio ->
+                // 1. Eliminar todos los recordatorios existentes
+                recordatorioDao.deleteAll()
+                Log.d(TAG, "Todos los recordatorios locales eliminados")
+
+                // 2. Insertar los nuevos recordatorios
+                recordatoriosNuevos.forEach { recordatorio ->
                     recordatorioDao.insert(recordatorio)
                 }
-                Log.d(TAG, "Se guardaron ${recordatorios.size} recordatorios en la base de datos")
+                Log.d(TAG, "Estado reemplazado: ${recordatoriosNuevos.size} recordatorios sincronizados")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error al procesar la lista de recordatorios: ${e.message}", e)
+            Log.e(TAG, "Error al procesar el reemplazo de recordatorios: ${e.message}", e)
         }
     }
 
@@ -95,12 +100,25 @@ class RecordatorioSyncService : WearableListenerService() {
         try {
             val id = data.toInt()
             CoroutineScope(Dispatchers.IO).launch {
-                // Asumiendo que tienes un metodo delete en tu DAO
                 recordatorioDao.deleteById(id)
                 Log.d(TAG, "Recordatorio eliminado: $id")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error al eliminar el recordatorio: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Maneja cuando el móvil se conecta y solicita sincronización completa
+     */
+    private fun handleMobileConnected() {
+        Log.d(TAG, "Móvil conectado, enviando notificación de conexión del reloj")
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                RecordatorioSyncHelper.notifyWatchConnected(applicationContext)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error al notificar conexión del reloj: ${e.message}")
+            }
         }
     }
 

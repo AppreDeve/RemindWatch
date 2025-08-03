@@ -78,6 +78,26 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         } else {
             Log.e("SensorDebug", "Acelerómetro NO disponible")
         }
+
+        // Solicitar sincronización completa al iniciar la app
+        requestInitialSync()
+    }
+
+    /**
+     * Solicita sincronización completa al iniciar la aplicación del reloj
+     */
+    private fun requestInitialSync() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Notificar al móvil que el reloj está conectado
+                RecordatorioSyncHelper.notifyWatchConnected(applicationContext)
+                // Solicitar sincronización completa
+                RecordatorioSyncHelper.requestFullSync(applicationContext)
+                Log.d("MainActivity", "Solicitud de sincronización inicial enviada")
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error en sincronización inicial: ${e.message}")
+            }
+        }
     }
 
     override fun onResume() {
