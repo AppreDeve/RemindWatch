@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.wear.widget.WearableRecyclerView
@@ -71,23 +72,24 @@ class MainActivity : ComponentActivity() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_recordatorio, null)
         val tituloEditText = dialogView.findViewById<EditText>(R.id.tituloEditText)
         val descripcionEditText = dialogView.findViewById<EditText>(R.id.descripcionEditText)
-        val vencimientoEditText = dialogView.findViewById<EditText>(R.id.vencimientoEditText)
-        val recordatorioEditText = dialogView.findViewById<EditText>(R.id.recordatorioEditText)
+        val iconoVencimiento = dialogView.findViewById<View>(R.id.iconoVencimiento)
+        val iconoRecordatorio = dialogView.findViewById<View>(R.id.iconoRecordatorio)
         val guardarButton = dialogView.findViewById<Button>(R.id.guardarButton)
 
         var vencimientoTimestamp = 0L
         var recordatorioTimestamp = 0L
 
-        vencimientoEditText.setOnClickListener {
+        iconoVencimiento.setOnClickListener {
             showDatePicker { timestamp, formattedDate ->
                 vencimientoTimestamp = timestamp
-                vencimientoEditText.setText(formattedDate)
+                Toast.makeText(this, "Vencimiento: $formattedDate", Toast.LENGTH_SHORT).show()
             }
         }
-        recordatorioEditText.setOnClickListener {
+
+        iconoRecordatorio.setOnClickListener {
             showDateTimePicker { timestamp, formattedDateTime ->
                 recordatorioTimestamp = timestamp
-                recordatorioEditText.setText(formattedDateTime)
+                Toast.makeText(this, "Recordatorio: $formattedDateTime", Toast.LENGTH_SHORT).show()
             }
         }
 
