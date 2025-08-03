@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-07-30T15:12:07.352946400Z">
+        <DropdownSelection timestamp="2025-08-02T21:49:30.507457900Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="PhysicalDevice" identifier="serial=3f275f840000" />
@@ -15,10 +15,10 @@
       </SelectionState>
       <SelectionState runConfigName="watch">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-07-21T20:21:20.275261700Z">
+        <DropdownSelection timestamp="2025-08-02T21:58:46.186637700Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\abaru\.android\avd\Pixel_8_Pro_API_30.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\chiki\.android\avd\Wear_OS_Rectangular.avd" />
             </handle>
           </Target>
         </DropdownSelection>
