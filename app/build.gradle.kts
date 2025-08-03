@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.firebase.inappmessaging)
     // Google Play Services para comunicación entre dispositivos (Wearable API)
     implementation(libs.play.services.wearable)
+    implementation(libs.androidx.swiperefreshlayout)
 
     // JUnit para pruebas unitarias
     testImplementation(libs.junit)

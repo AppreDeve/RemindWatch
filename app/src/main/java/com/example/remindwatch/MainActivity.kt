@@ -3,6 +3,7 @@ package com.example.remindwatch
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 import com.example.remindwatch.sync.RecordatorioSynchronizer
 
@@ -26,6 +28,9 @@ class MainActivity : AppCompatActivity() {
 
     // Instancia del sincronizador con el reloj
     private lateinit var synchronizer: RecordatorioSynchronizer
+
+    // SwipeRefreshLayout para el gesto de deslizar hacia abajo
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     // Timestamps para los campos de fecha y hora
     private var recordatorioTimestamp: Long = 0L
@@ -62,6 +67,21 @@ class MainActivity : AppCompatActivity() {
 
     // Configura los elementos de la interfaz y sus listeners
     private fun inicializarUI() {
+        // Inicializar SwipeRefreshLayout
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
+        swipeRefreshLayout.setOnRefreshListener {
+            Log.d("MainActivity", "Gesto de deslizar hacia abajo detectado")
+            refreshData()
+        }
+
+        // Configurar colores del SwipeRefreshLayout
+        swipeRefreshLayout.setColorSchemeResources(
+            android.R.color.holo_blue_bright,
+            android.R.color.holo_green_light,
+            android.R.color.holo_orange_light,
+            android.R.color.holo_red_light
+        )
+
         // Solo inicializa el RecyclerView y carga los recordatorios
         cargarRecordatorios()
 
@@ -69,6 +89,34 @@ class MainActivity : AppCompatActivity() {
         val agregarButton = findViewById<FloatingActionButton>(R.id.dialogButton)
         agregarButton.setOnClickListener {
             mostrarDialogoAgregarRecordatorio()
+        }
+    }
+
+    /**
+     * Refresca los datos solicitando sincronización completa y recargando la vista
+     */
+    private fun refreshData() {
+        lifecycleScope.launch {
+            try {
+                Log.d("MainActivity", "Iniciando refresco de datos...")
+
+                // Forzar sincronización completa
+                synchronizer.forceSyncAll()
+
+                // Pequeño delay para permitir que la sincronización se procese
+                kotlinx.coroutines.delay(1000)
+
+                // Recargar datos en el hilo principal
+                cargarRecordatorios()
+
+                // Detener la animación de refresco
+                swipeRefreshLayout.isRefreshing = false
+
+                Log.d("MainActivity", "Datos refrescados exitosamente")
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error al refrescar datos: ${e.message}")
+                swipeRefreshLayout.isRefreshing = false
+            }
         }
     }
 

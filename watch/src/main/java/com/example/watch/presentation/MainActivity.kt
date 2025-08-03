@@ -70,6 +70,12 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             mostrarDialogoAgregarRecordatorio()
         }
 
+        // Conectar el botón de sincronización
+        findViewById<View>(R.id.btn_update).setOnClickListener {
+            Log.d("MainActivity", "Botón de sincronización presionado")
+            refreshData()
+        }
+
         // Inicializa el sensor de acelerómetro
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         acelerometro = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
@@ -96,6 +102,27 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                 Log.d("MainActivity", "Solicitud de sincronización inicial enviada")
             } catch (e: Exception) {
                 Log.e("MainActivity", "Error en sincronización inicial: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Refresca los datos solicitando sincronización y recargando la vista
+     */
+    private fun refreshData() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                Log.d("MainActivity", "Iniciando refresco de datos...")
+                // Solicitar sincronización completa del móvil
+                RecordatorioSyncHelper.requestFullSync(applicationContext)
+
+                // Recargar datos locales en el hilo principal
+                runOnUiThread {
+                    viewModel.loadRecordatorios()
+                    Log.d("MainActivity", "Datos refrescados exitosamente")
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error al refrescar datos: ${e.message}")
             }
         }
     }
