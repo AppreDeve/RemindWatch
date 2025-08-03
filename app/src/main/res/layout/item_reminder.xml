@@ -54,33 +54,37 @@
             android:textColor="#757575"
             android:layout_marginTop="4dp" />
 
-        <!-- Botones de acción -->
+        <!-- CheckBox para marcar el recordatorio como completado -->
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="start"
+            android:gravity="start|center_vertical"
             android:layout_marginTop="12dp"
-            android:layout_marginBottom="4dp">
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
-            <ImageButton
-                android:id="@+id/editButton"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_edit"
-                android:contentDescription="Editar"
-                card_view:tint="#616161" />
+            <CheckBox
+                android:id="@+id/completadoCheck"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="Marcar como completado" />
 
-            <ImageButton
-                android:id="@+id/deleteButton"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_delete"
-                android:contentDescription="Eliminar"
-                card_view:tint="#D32F2F" />
+            <TextView
+                android:id="@+id/completadoText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Marcar como completado"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#000000"
+                android:layout_marginStart="4dp"/>
         </LinearLayout>
+
+
+        <!-- Botones de acción -->
+
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>
