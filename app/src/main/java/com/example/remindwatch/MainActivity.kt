@@ -2,6 +2,10 @@ package com.example.remindwatch
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -42,6 +46,11 @@ class MainActivity : AppCompatActivity() {
     private var recordatorioTimestamp: Long = 0L
     private var vencimientoTimestamp: Long = 0L
 
+    // Sensor para detectar sacudidas
+    private lateinit var sensorManager: SensorManager
+    private var shakeListener: SensorEventListener? = null
+    private var lastShakeTime: Long = 0L
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -58,6 +67,9 @@ class MainActivity : AppCompatActivity() {
 
         // Sincroniza todos los recordatorios al iniciar
         sincronizarTodosLosRecordatorios()
+
+        // Inicializar sensor manager
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
     }
 
     override fun onResume() {
@@ -69,6 +81,33 @@ class MainActivity : AppCompatActivity() {
             kotlinx.coroutines.delay(1000)
             synchronizer.forceSyncAll()
         }
+
+        // Registrar listener de sacudida
+        val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        if (accelerometer != null) {
+            shakeListener = object : SensorEventListener {
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+                override fun onSensorChanged(event: SensorEvent?) {
+                    if (event == null) return
+                    val x = event.values[0]
+                    val y = event.values[1]
+                    val z = event.values[2]
+                    val gForce = Math.sqrt((x * x + y * y + z * z).toDouble()) / SensorManager.GRAVITY_EARTH
+                    val now = System.currentTimeMillis()
+                    if (gForce > 2.5 && now - lastShakeTime > 1000) { // Umbral y anti-rebote
+                        lastShakeTime = now
+                        refreshData()
+                    }
+                }
+            }
+            sensorManager.registerListener(shakeListener, accelerometer, SensorManager.SENSOR_DELAY_UI)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Liberar listener de sacudida
+        shakeListener?.let { sensorManager.unregisterListener(it) }
     }
 
     // Configura los elementos de la interfaz y sus listeners
@@ -410,4 +449,3 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
-

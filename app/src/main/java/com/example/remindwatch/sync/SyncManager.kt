@@ -15,6 +15,7 @@ import org.json.JSONObject
 
 /**
  * Manager mejorado para manejar la sincronización bidireccional y el estado offline
+ * Ahora incluye sincronización con Smart TV
  */
 class SyncManager(private val context: Context) {
 
@@ -23,6 +24,10 @@ class SyncManager(private val context: Context) {
     private val pendingSyncDao = db.pendingSyncDao()
     private val recordatorioDao = db.recordatorioDao()
     private val recordatorioSync = RecordatorioSync(context)
+    private val smartTVSyncClient = SmartTVSyncClient(context)
+
+    // IP de la Smart TV
+    private val smartTVIP = "192.168.100.25"
 
     /**
      * Programa una eliminación para sincronizar más tarde
@@ -40,6 +45,9 @@ class SyncManager(private val context: Context) {
 
             // Intentar sincronizar inmediatamente
             attemptSync()
+
+            // Sincronizar con Smart TV
+            attemptSmartTVSync()
         } catch (e: Exception) {
             Log.e(TAG, "Error al programar eliminación: ${e.message}")
         }
@@ -70,6 +78,9 @@ class SyncManager(private val context: Context) {
 
             // Intentar sincronizar inmediatamente
             attemptSync()
+
+            // Sincronizar con Smart TV
+            attemptSmartTVSync()
         } catch (e: Exception) {
             Log.e(TAG, "Error al programar $operation: ${e.message}")
         }
@@ -174,6 +185,62 @@ class SyncManager(private val context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
             Log.d(TAG, "Reloj reconectado, iniciando sincronización completa")
             attemptSync()
+        }
+    }
+
+    /**
+     * Sincroniza todos los recordatorios con la Smart TV
+     */
+    suspend fun attemptSmartTVSync() {
+        try {
+            // Verificar si la TV está disponible
+            if (!smartTVSyncClient.checkTVAvailability(smartTVIP)) {
+                Log.d(TAG, "Smart TV no disponible en $smartTVIP")
+                return
+            }
+
+            // Obtener todos los recordatorios activos
+            val recordatorios = recordatorioDao.getAll()
+            val recordatoriosList = recordatorios.map { recordatorio ->
+                mapOf(
+                    "id" to recordatorio.id,
+                    "titulo" to recordatorio.titulo,
+                    "descripcion" to (recordatorio.descripcion ?: ""),
+                    "fechaHora" to recordatorio.fechaHora,
+                    "vencimiento" to (recordatorio.vencimiento ?: 0L),
+                    "recordatorio" to (recordatorio.recordatorio ?: 0L),
+                    "status" to recordatorio.status
+                )
+            }
+
+            // Enviar a la Smart TV
+            val success = smartTVSyncClient.syncRecordatoriosToTV(smartTVIP, recordatoriosList)
+            if (success) {
+                Log.d(TAG, "Sincronización exitosa con Smart TV: ${recordatorios.size} recordatorios")
+            } else {
+                Log.w(TAG, "Error en sincronización con Smart TV")
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error al sincronizar con Smart TV: ${e.message}")
+        }
+    }
+
+    /**
+     * Elimina un recordatorio específico en la Smart TV
+     */
+    suspend fun deleteRecordatorioInSmartTV(recordatorioId: Int) {
+        try {
+            if (smartTVSyncClient.checkTVAvailability(smartTVIP)) {
+                val success = smartTVSyncClient.deleteRecordatorioInTV(smartTVIP, recordatorioId)
+                if (success) {
+                    Log.d(TAG, "Recordatorio $recordatorioId eliminado en Smart TV")
+                } else {
+                    Log.w(TAG, "Error al eliminar recordatorio $recordatorioId en Smart TV")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error al eliminar en Smart TV: ${e.message}")
         }
     }
 }

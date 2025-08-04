@@ -35,10 +35,8 @@ class RecordatorioSyncService : WearableListenerService() {
 
         when (messageEvent.path) {
             "/sync_recordatorio" -> handleSingleRecordatorio(messageEvent)
-            "/sync_recordatorios_list" -> handleRecordatoriosListReplacement(messageEvent)
+            "/sync_recordatorios_list" -> handleRecordatoriosList(messageEvent)
             "/delete_recordatorio" -> handleDeleteRecordatorio(messageEvent)
-            "/mobile_connected" -> handleMobileConnected()
-            else -> Log.d(TAG, "Path desconocido: ${messageEvent.path}")
         }
     }
 
@@ -50,6 +48,8 @@ class RecordatorioSyncService : WearableListenerService() {
             val json = JSONObject(data)
             val recordatorio = parseRecordatorioFromJson(json)
 
+            // Guardar en la base de datos en un hilo secundario
+            // Guardar en la base de datos en un hilo secundario
             CoroutineScope(Dispatchers.IO).launch {
                 recordatorioDao.insert(recordatorio)
                 Log.d(TAG, "Recordatorio guardado con éxito: ${recordatorio.id} - ${recordatorio.titulo}")
@@ -60,65 +60,43 @@ class RecordatorioSyncService : WearableListenerService() {
     }
 
     /**
-     * Procesa una lista de recordatorios recibida y REEMPLAZA completamente el estado local.
-     * Esto asegura que el reloj tenga exactamente los mismos recordatorios que el móvil.
+     * Procesa una lista de recordatorios recibida y los guarda en la base de datos.
+     * @param messageEvent Evento de mensaje recibido con los datos en formato JSON Array.
      */
-    private fun handleRecordatoriosListReplacement(messageEvent: MessageEvent) {
+    private fun handleRecordatoriosList(messageEvent: MessageEvent) {
         val data = String(messageEvent.data)
-        Log.d(TAG, "Lista de recordatorios para reemplazo recibida")
+        Log.d(TAG, "Lista de recordatorios recibida")
 
         try {
             val jsonArray = JSONArray(data)
-            val recordatoriosNuevos = mutableListOf<Recordatorio>()
+            val recordatorios = mutableListOf<Recordatorio>()
 
-            // Convierte cada objeto JSON en un Recordatorio
+            // Convierte cada objeto JSON en un Recordatorio y lo agrega a la lista
             for (i in 0 until jsonArray.length()) {
                 val json = jsonArray.getJSONObject(i)
-                recordatoriosNuevos.add(parseRecordatorioFromJson(json))
+                recordatorios.add(parseRecordatorioFromJson(json))
             }
 
-            // Reemplaza completamente el estado local
+            // Guarda todos los recordatorios en la base de datos en un hilo secundario
             CoroutineScope(Dispatchers.IO).launch {
-                // 1. Eliminar todos los recordatorios existentes
-                recordatorioDao.deleteAll()
-                Log.d(TAG, "Todos los recordatorios locales eliminados")
-
-                // 2. Insertar los nuevos recordatorios
-                recordatoriosNuevos.forEach { recordatorio ->
-                    recordatorioDao.insert(recordatorio)
-                }
-                Log.d(TAG, "Estado reemplazado: ${recordatoriosNuevos.size} recordatorios sincronizados")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error al procesar el reemplazo de recordatorios: ${e.message}", e)
+                recordatorios.forEach { recordatorio ->
+            Log.e(TAG, "Error al procesar la lista de recordatorios: ${e.message}", e)
         }
-    }
+                Log.d(TAG, "Se guardaron ${recordatorios.size} recordatorios en la base de datos")
 
     private fun handleDeleteRecordatorio(messageEvent: MessageEvent) {
-        val data = String(messageEvent.data)
+            Log.e(TAG, "Error al procesar la lista de recordatorios: ${e.message}", e)
 
         try {
             val id = data.toInt()
             CoroutineScope(Dispatchers.IO).launch {
+                // Asumiendo que tienes un metodo delete en tu DAO
                 recordatorioDao.deleteById(id)
                 Log.d(TAG, "Recordatorio eliminado: $id")
             }
         } catch (e: Exception) {
+                // Asumiendo que tienes un metodo delete en tu DAO
             Log.e(TAG, "Error al eliminar el recordatorio: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Maneja cuando el móvil se conecta y solicita sincronización completa
-     */
-    private fun handleMobileConnected() {
-        Log.d(TAG, "Móvil conectado, enviando notificación de conexión del reloj")
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                RecordatorioSyncHelper.notifyWatchConnected(applicationContext)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error al notificar conexión del reloj: ${e.message}")
-            }
         }
     }
 
@@ -126,10 +104,3 @@ class RecordatorioSyncService : WearableListenerService() {
         return Recordatorio(
             id = json.optInt("id", 0),
             titulo = json.getString("titulo"),
-            descripcion = json.getString("descripcion"),
-            fechaHora = json.getLong("fechaHora"),
-            vencimiento = json.getLong("vencimiento"),
-            recordatorio = json.getLong("recordatorio")
-        )
-    }
-}

@@ -65,6 +65,9 @@ class RecordatorioSyncService : WearableListenerService() {
             val db = RecordatorioDatabase.getDatabase(context)
             db.recordatorioDao().insert(recordatorio)
             Log.d(TAG, "Recordatorio guardado desde Wear: ${recordatorio.titulo}")
+
+            // Programar sincronización con Smart TV
+            syncManager.scheduleCreateOrUpdate(recordatorio, "UPDATE")
         }
     }
 
@@ -73,6 +76,9 @@ class RecordatorioSyncService : WearableListenerService() {
             val db = RecordatorioDatabase.getDatabase(context)
             db.recordatorioDao().deleteById(id)
             Log.d(TAG, "Recordatorio eliminado desde Wear: $id")
+
+            // Programar sincronización con Smart TV
+            syncManager.scheduleDelete(id)
         }
     }
 }
