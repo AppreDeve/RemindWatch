@@ -12,12 +12,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 import com.example.remindwatch.sync.RecordatorioSynchronizer
+import com.example.remindwatch.notifications.NotificationManager
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import data.database.RecordatorioDatabase
 import data.database.entity.Recordatorio
 import kotlinx.coroutines.launch
 import java.util.Calendar
+
+import android.os.Build
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,6 +39,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // 🔒 Solicitar permiso para notificaciones (Android 13+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissions(
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    1001
+                )
+            }
+        }
+
         // Inicializa la base de datos
         db = RecordatorioDatabase.getDatabase(this)
 
@@ -48,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         // Sincroniza todos los recordatorios al iniciar
         sincronizarTodosLosRecordatorios()
     }
+
 
     // Configura los elementos de la interfaz y sus listeners
     private fun inicializarUI() {
@@ -141,7 +158,8 @@ class MainActivity : AppCompatActivity() {
                 descripcion = descripcion,
                 fechaHora = recordatorioTimestamp,
                 vencimiento = if (vencimientoTimestamp != 0L) vencimientoTimestamp else 0L,
-                recordatorio = if (recordatorioTimestamp != 0L) recordatorioTimestamp else 0L
+                recordatorio = if (recordatorioTimestamp != 0L) recordatorioTimestamp else 0L,
+                status = true
             )
 
             lifecycleScope.launch {
@@ -150,6 +168,9 @@ class MainActivity : AppCompatActivity() {
 
                 // Obtener el recordatorio con el ID asignado
                 val recordatorioConId = recordatorio.copy(id = id.toInt())
+
+                // Programar la notificación
+                NotificationManager(applicationContext).scheduleNotificationForRecordatorio(recordatorioConId)
 
                 // Sincronizar con el reloj
                 synchronizer.syncCreatedRecordatorio(recordatorioConId)
