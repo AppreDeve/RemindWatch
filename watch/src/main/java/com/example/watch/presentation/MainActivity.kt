@@ -3,6 +3,10 @@ package com.example.watch.presentation
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.hardware.SensorManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -22,7 +26,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.*
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), SensorEventListener {
 
     private val viewModel: RecordatorioViewModel by viewModel()
     private lateinit var adapter: RecordatorioAdapter
@@ -142,28 +146,26 @@ class MainActivity : ComponentActivity() {
     }
 
     // Detecta el gesto de girar hacia adelante
-    override fun onSensorChanged(event: SensorEvent?) {
-        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
-            val x = event.values[0]
-            val y = event.values[1]
-            val z = event.values[2]
-            val now = System.currentTimeMillis()
-            val rotationX = Math.atan2(y.toDouble(), Math.sqrt((x * x + z * z).toDouble())) * 180 / Math.PI
-            // Solo captura la rotación X, sin comparar con baseRotationX
-            Log.d("SensorDebug", "RotationX: $rotationX")
-            if (rotationX > 30) {
-                Log.d("SensorDebug", "Rotación X > 30 detectada")
-                if (lastForwardTimestamp + 1500 < now) {
-                    lastForwardTimestamp = now
-                    Log.d("SensorDebug", "Gesto detectado: abrir ventana de agregar tarea")
-                    runOnUiThread {
-                        try {
-                            Log.d("SensorDebug", "Intentando mostrar diálogo...")
-                            mostrarDialogoAgregarRecordatorio()
-                            Log.d("SensorDebug", "Diálogo mostrado exitosamente")
-                        } catch (e: Exception) {
-                            Log.e("SensorDebug", "Error al mostrar diálogo: ${e.message}")
-                        }
+    override fun onSensorChanged(event: SensorEvent) {
+        val x = event.values[0]
+        val y = event.values[1]
+        val z = event.values[2]
+        val now = System.currentTimeMillis()
+        val rotationX = Math.atan2(y.toDouble(), Math.sqrt((x * x + z * z).toDouble())) * 180 / Math.PI
+        // Solo captura la rotación X, sin comparar con baseRotationX
+        Log.d("SensorDebug", "RotationX: $rotationX")
+        if (rotationX > 30) {
+            Log.d("SensorDebug", "Rotación X > 30 detectada")
+            if (lastForwardTimestamp + 1500 < now) {
+                lastForwardTimestamp = now
+                Log.d("SensorDebug", "Gesto detectado: abrir ventana de agregar tarea")
+                runOnUiThread {
+                    try {
+                        Log.d("SensorDebug", "Intentando mostrar diálogo...")
+                        mostrarDialogoAgregarRecordatorio()
+                        Log.d("SensorDebug", "Diálogo mostrado exitosamente")
+                    } catch (e: Exception) {
+                        Log.e("SensorDebug", "Error al mostrar diálogo: ${e.message}")
                     }
                 }
             }
@@ -184,8 +186,10 @@ class MainActivity : ComponentActivity() {
 
             val tituloEditText = dialogView.findViewById<EditText>(R.id.tituloEditText)
             val descripcionEditText = dialogView.findViewById<EditText>(R.id.descripcionEditText)
-            val vencimientoEditText = dialogView.findViewById<EditText>(R.id.vencimientoEditText)
-            val recordatorioEditText = dialogView.findViewById<EditText>(R.id.recordatorioEditText)
+            val vencimientoTextView = dialogView.findViewById<TextView>(R.id.vencimientoTextView)
+            val recordatorioTextView = dialogView.findViewById<TextView>(R.id.recordatorioTextView)
+            val iconoVencimiento = dialogView.findViewById<View>(R.id.iconoVencimiento)
+            val iconoRecordatorio = dialogView.findViewById<View>(R.id.iconoRecordatorio)
             val guardarButton = dialogView.findViewById<Button>(R.id.guardarButton)
 
             Log.d("SensorDebug", "Views encontradas correctamente")
@@ -193,16 +197,16 @@ class MainActivity : ComponentActivity() {
             var vencimientoTimestamp = 0L
             var recordatorioTimestamp = 0L
 
-            vencimientoEditText.setOnClickListener {
+            iconoVencimiento.setOnClickListener {
                 showDatePicker { timestamp, formattedDate ->
                     vencimientoTimestamp = timestamp
-                    vencimientoEditText.setText(formattedDate)
+                    vencimientoTextView.text = formattedDate
                 }
             }
-            recordatorioEditText.setOnClickListener {
+            iconoRecordatorio.setOnClickListener {
                 showDateTimePicker { timestamp, formattedDateTime ->
                     recordatorioTimestamp = timestamp
-                    recordatorioEditText.setText(formattedDateTime)
+                    recordatorioTextView.text = formattedDateTime
                 }
             }
 

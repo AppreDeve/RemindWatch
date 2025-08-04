@@ -34,28 +34,62 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:gravity="center"
                 android:layout_marginBottom="8dp">
 
-                <ImageView
-                    android:id="@+id/iconoVencimiento"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_marginEnd="16dp"
-                    android:src="@drawable/ic_calendar"
-                    android:contentDescription="Seleccionar vencimiento"
-                    android:clickable="true"
-                    android:focusable="true" />
+                <!-- Selección de vencimiento -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
 
-                <ImageView
-                    android:id="@+id/iconoRecordatorio"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:src="@drawable/ic_bell"
-                    android:contentDescription="Seleccionar recordatorio"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    <ImageButton
+                        android:id="@+id/iconoVencimiento"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_calendar"
+                        android:contentDescription="Seleccionar vencimiento" />
+
+                    <TextView
+                        android:id="@+id/vencimientoTextView"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Sin fecha"
+                        android:textSize="14sp"
+                        android:textColor="@android:color/black"
+                        android:layout_marginStart="12dp"/>
+                </LinearLayout>
+
+                <!-- Selección de recordatorio -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <ImageButton
+                        android:id="@+id/iconoRecordatorio"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_bell"
+                        android:contentDescription="Seleccionar recordatorio"
+                        />
+
+                    <TextView
+                        android:id="@+id/recordatorioTextView"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Sin fecha"
+                        android:textSize="14sp"
+                        android:textColor="@android:color/black"
+                        android:layout_marginStart="12dp"/>
+                </LinearLayout>
             </LinearLayout>
 
             <!-- Descripción -->
