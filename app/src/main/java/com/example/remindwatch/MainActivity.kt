@@ -32,6 +32,12 @@ class MainActivity : AppCompatActivity() {
     // SwipeRefreshLayout para el gesto de deslizar hacia abajo
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
+    // Variable para controlar el filtro actual
+    private var filtroActual = "PENDIENTES" // "PENDIENTES", "COMPLETADOS", "EXPIRADOS"
+
+    // Adapter global para poder actualizarlo
+    private lateinit var adapter: RecordatorioAdapter
+
     // Timestamps para los campos de fecha y hora
     private var recordatorioTimestamp: Long = 0L
     private var vencimientoTimestamp: Long = 0L
@@ -82,14 +88,82 @@ class MainActivity : AppCompatActivity() {
             android.R.color.holo_red_light
         )
 
-        // Solo inicializa el RecyclerView y carga los recordatorios
-        cargarRecordatorios()
+        // Configurar botones de filtrado
+        configurarBotonesFiltrado()
+
+        // Inicializar RecyclerView con adapter
+        configurarRecyclerView()
 
         // Si tienes un botón para agregar, aquí puedes poner el listener:
         val agregarButton = findViewById<FloatingActionButton>(R.id.dialogButton)
         agregarButton.setOnClickListener {
             mostrarDialogoAgregarRecordatorio()
         }
+    }
+
+    private fun configurarBotonesFiltrado() {
+        val btnPendientes = findViewById<Button>(R.id.button6)
+        val btnCompletados = findViewById<Button>(R.id.button5)
+        val btnExpirados = findViewById<Button>(R.id.button7)
+
+        btnPendientes.setOnClickListener {
+            filtroActual = "PENDIENTES"
+            actualizarEstadoBotones()
+            cargarRecordatorios()
+        }
+
+        btnCompletados.setOnClickListener {
+            filtroActual = "COMPLETADOS"
+            actualizarEstadoBotones()
+            cargarRecordatorios()
+        }
+
+        btnExpirados.setOnClickListener {
+            filtroActual = "EXPIRADOS"
+            actualizarEstadoBotones()
+            cargarRecordatorios()
+        }
+
+        // Establecer estado inicial
+        actualizarEstadoBotones()
+    }
+
+    private fun actualizarEstadoBotones() {
+        val btnPendientes = findViewById<Button>(R.id.button6)
+        val btnCompletados = findViewById<Button>(R.id.button5)
+        val btnExpirados = findViewById<Button>(R.id.button7)
+
+        // Resetear todos los botones
+        btnPendientes.alpha = 0.6f
+        btnCompletados.alpha = 0.6f
+        btnExpirados.alpha = 0.6f
+
+        // Resaltar el botón activo
+        when (filtroActual) {
+            "PENDIENTES" -> btnPendientes.alpha = 1.0f
+            "COMPLETADOS" -> btnCompletados.alpha = 1.0f
+            "EXPIRADOS" -> btnExpirados.alpha = 1.0f
+        }
+    }
+
+    private fun configurarRecyclerView() {
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewRecordatorios)
+        adapter = RecordatorioAdapter(
+            onDeleteClick = { recordatorio ->
+                eliminarRecordatorio(recordatorio)
+            },
+            onEditClick = { recordatorio ->
+                editarRecordatorio(recordatorio)
+            },
+            onItemClick = { recordatorio ->
+                editarRecordatorio(recordatorio)
+            },
+            onStatusChange = { recordatorio ->
+                cambiarStatusRecordatorio(recordatorio)
+            }
+        )
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
     }
 
     /**
@@ -163,23 +237,13 @@ class MainActivity : AppCompatActivity() {
 
     // Carga los recordatorios desde la base de datos y los muestra en el RecyclerView
     private fun cargarRecordatorios() {
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewRecordatorios)
-        val adapter = RecordatorioAdapter(
-            onDeleteClick = { recordatorio ->
-                eliminarRecordatorio(recordatorio)
-            },
-            onEditClick = { recordatorio ->
-                editarRecordatorio(recordatorio)
-            },
-            onItemClick = { recordatorio ->
-                editarRecordatorio(recordatorio)
-            }
-        )
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(this)
-
         lifecycleScope.launch {
-            val lista = db.recordatorioDao().getAll()
+            val lista = when (filtroActual) {
+                "PENDIENTES" -> db.recordatorioDao().getPendientes()
+                "COMPLETADOS" -> db.recordatorioDao().getCompletados()
+                "EXPIRADOS" -> db.recordatorioDao().getExpirados(System.currentTimeMillis())
+                else -> db.recordatorioDao().getAll()
+            }
             adapter.submitList(lista)
         }
     }
@@ -332,4 +396,18 @@ class MainActivity : AppCompatActivity() {
             }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
         }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
     }
+
+    private fun cambiarStatusRecordatorio(recordatorio: Recordatorio) {
+        lifecycleScope.launch {
+            // Actualizar en la base de datos local
+            db.recordatorioDao().update(recordatorio)
+
+            // Sincronizar con el reloj
+            synchronizer.syncUpdatedRecordatorio(recordatorio)
+
+            // Recargar la lista con el filtro actual
+            cargarRecordatorios()
+        }
+    }
 }
+
