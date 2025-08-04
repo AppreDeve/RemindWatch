@@ -98,9 +98,6 @@ class RecordatorioAdapter(
                 onDeleteClick(recordatorio)
             }
 
-            itemView.findViewById<ImageButton>(R.id.editButton)?.setOnClickListener {
-                onEditClick(recordatorio)
-            }
 
             // Listener para click en todo el item
             itemView.setOnClickListener {
