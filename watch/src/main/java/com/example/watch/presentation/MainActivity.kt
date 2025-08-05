@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Inicializar vistas
+        // Inicializar vistas de activity_main
         recyclerView = findViewById(R.id.recordatorios_list)
         emptyView = findViewById(R.id.empty_view)
 
