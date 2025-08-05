@@ -1,0 +1,15 @@
+<!-- res/drawable/borde_recordatorio.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Fondo del layout -->
+    <solid android:color="@android:color/white" />
+
+    <!-- Grosor y color del borde -->
+    <stroke
+        android:width="2dp"
+        android:color="#CCCCCC" />
+
+    <!-- Opcional: esquinas redondeadas -->
+    <corners android:radius="12dp" />
+</shape>

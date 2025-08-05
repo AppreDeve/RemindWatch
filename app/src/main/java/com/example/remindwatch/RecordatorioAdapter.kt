@@ -4,6 +4,8 @@ package com.example.remindwatch
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -13,19 +15,19 @@ import data.database.entity.Recordatorio
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import android.widget.ImageButton
 
 class RecordatorioAdapter(
     private val onDeleteClick: (Recordatorio) -> Unit = {},
     private val onEditClick: (Recordatorio) -> Unit = {},
-    private val onItemClick: (Recordatorio) -> Unit = {} // Nuevo parámetro para click en el item
+    private val onItemClick: (Recordatorio) -> Unit = {},
+    private val onStatusChange: (Recordatorio) -> Unit = {} // Nuevo callback para cambio de status
 ) : ListAdapter<Recordatorio, RecordatorioAdapter.ViewHolder>(DIFF_CALLBACK) {
 
     // Crea una nueva vista para cada elemento de la lista
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_reminder, parent, false)
-        return ViewHolder(view, onDeleteClick, onEditClick, onItemClick)
+        return ViewHolder(view, onDeleteClick, onEditClick, onItemClick, onStatusChange)
     }
 
     // Asocia los datos del recordatorio con la vista
@@ -39,7 +41,8 @@ class RecordatorioAdapter(
         itemView: View,
         private val onDeleteClick: (Recordatorio) -> Unit,
         private val onEditClick: (Recordatorio) -> Unit,
-        private val onItemClick: (Recordatorio) -> Unit // Nuevo parámetro
+        private val onItemClick: (Recordatorio) -> Unit,
+        private val onStatusChange: (Recordatorio) -> Unit // Nuevo parámetro
     ) : RecyclerView.ViewHolder(itemView) {
         fun bind(recordatorio: Recordatorio) {
             // Formatea la fecha y hora del recordatorio
@@ -71,14 +74,30 @@ class RecordatorioAdapter(
                 recordatorioTextView.visibility = View.GONE
             }
 
+            // Configurar CheckBox
+            val checkBox = itemView.findViewById<CheckBox>(R.id.completadoCheck)
+            checkBox.isChecked = !recordatorio.status // Si status es false, está completado
+
+            // Cambiar texto según el estado
+            val completadoText = itemView.findViewById<TextView>(R.id.completadoText)
+            if (recordatorio.status) {
+                completadoText.text = "Marcar como completado"
+            } else {
+                completadoText.text = "Marcar como pendiente"
+            }
+
+            // Listener para el CheckBox
+            checkBox.setOnCheckedChangeListener { _, isChecked ->
+                val nuevoStatus = !isChecked // Si está marcado, status = false (completado)
+                val recordatorioActualizado = recordatorio.copy(status = nuevoStatus)
+                onStatusChange(recordatorioActualizado)
+            }
+
             // Configurar botones de editar y eliminar
             itemView.findViewById<ImageButton>(R.id.deleteButton)?.setOnClickListener {
                 onDeleteClick(recordatorio)
             }
 
-            itemView.findViewById<ImageButton>(R.id.editButton)?.setOnClickListener {
-                onEditClick(recordatorio)
-            }
 
             // Listener para click en todo el item
             itemView.setOnClickListener {

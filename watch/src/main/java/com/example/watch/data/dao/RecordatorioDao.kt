@@ -41,4 +41,10 @@ interface RecordatorioDao {
      */
     @Query("DELETE FROM recordatorio WHERE id = :id")
     suspend fun deleteById(id: Int)
+
+    /**
+     * Elimina todos los recordatorios de la base de datos.
+     */
+    @Query("DELETE FROM recordatorio")
+    suspend fun deleteAll()
 }

@@ -37,7 +37,6 @@ class RecordatorioSyncService : WearableListenerService() {
             "/sync_recordatorio" -> handleSingleRecordatorio(messageEvent)
             "/sync_recordatorios_list" -> handleRecordatoriosList(messageEvent)
             "/delete_recordatorio" -> handleDeleteRecordatorio(messageEvent)
-            else -> Log.d(TAG, "Path desconocido: ${messageEvent.path}")
         }
     }
 
@@ -49,6 +48,7 @@ class RecordatorioSyncService : WearableListenerService() {
             val json = JSONObject(data)
             val recordatorio = parseRecordatorioFromJson(json)
 
+            // Guardar en la base de datos en un hilo secundario
             // Guardar en la base de datos en un hilo secundario
             CoroutineScope(Dispatchers.IO).launch {
                 recordatorioDao.insert(recordatorio)
@@ -90,9 +90,8 @@ class RecordatorioSyncService : WearableListenerService() {
     }
 
     private fun handleDeleteRecordatorio(messageEvent: MessageEvent) {
-        val data = String(messageEvent.data)
-
         try {
+            val data = String(messageEvent.data)
             val id = data.toInt()
             CoroutineScope(Dispatchers.IO).launch {
                 // Asumiendo que tienes un metodo delete en tu DAO
@@ -108,10 +107,10 @@ class RecordatorioSyncService : WearableListenerService() {
         return Recordatorio(
             id = json.optInt("id", 0),
             titulo = json.getString("titulo"),
-            descripcion = json.getString("descripcion"),
-            fechaHora = json.getLong("fechaHora"),
-            vencimiento = json.getLong("vencimiento"),
-            recordatorio = json.getLong("recordatorio")
+            descripcion = json.optString("descripcion", ""),
+            fechaHora = json.optLong("fechaHora", 0L),
+            vencimiento = json.optLong("vencimiento", 0L),
+            recordatorio = json.optLong("recordatorio", 0L)
         )
     }
 }

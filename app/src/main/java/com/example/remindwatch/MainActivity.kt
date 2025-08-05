@@ -2,7 +2,12 @@ package com.example.remindwatch
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
@@ -10,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 import com.example.remindwatch.sync.RecordatorioSynchronizer
 import com.example.remindwatch.notifications.NotificationManager
@@ -31,9 +37,23 @@ class MainActivity : AppCompatActivity() {
     // Instancia del sincronizador con el reloj
     private lateinit var synchronizer: RecordatorioSynchronizer
 
+    // SwipeRefreshLayout para el gesto de deslizar hacia abajo
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+
+    // Variable para controlar el filtro actual
+    private var filtroActual = "PENDIENTES" // "PENDIENTES", "COMPLETADOS", "EXPIRADOS"
+
+    // Adapter global para poder actualizarlo
+    private lateinit var adapter: RecordatorioAdapter
+
     // Timestamps para los campos de fecha y hora
     private var recordatorioTimestamp: Long = 0L
     private var vencimientoTimestamp: Long = 0L
+
+    // Sensor para detectar sacudidas
+    private lateinit var sensorManager: SensorManager
+    private var shakeListener: SensorEventListener? = null
+    private var lastShakeTime: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,18 +83,170 @@ class MainActivity : AppCompatActivity() {
 
         // Sincroniza todos los recordatorios al iniciar
         sincronizarTodosLosRecordatorios()
+
+        // Inicializar sensor manager
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Forzar sincronización completa cuando la app vuelve a primer plano
+        // Esto ayuda a mantener sincronizados los dispositivos después de estar offline
+        lifecycleScope.launch {
+            // Pequeño delay para asegurar que la conexión esté establecida
+            kotlinx.coroutines.delay(1000)
+            synchronizer.forceSyncAll()
+        }
+
+        // Registrar listener de sacudida
+        val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        if (accelerometer != null) {
+            shakeListener = object : SensorEventListener {
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+                override fun onSensorChanged(event: SensorEvent?) {
+                    if (event == null) return
+                    val x = event.values[0]
+                    val y = event.values[1]
+                    val z = event.values[2]
+                    val gForce = Math.sqrt((x * x + y * y + z * z).toDouble()) / SensorManager.GRAVITY_EARTH
+                    val now = System.currentTimeMillis()
+                    if (gForce > 2.5 && now - lastShakeTime > 1000) { // Umbral y anti-rebote
+                        lastShakeTime = now
+                        refreshData()
+                    }
+                }
+            }
+            sensorManager.registerListener(shakeListener, accelerometer, SensorManager.SENSOR_DELAY_UI)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Liberar listener de sacudida
+        shakeListener?.let { sensorManager.unregisterListener(it) }
     }
 
 
     // Configura los elementos de la interfaz y sus listeners
     private fun inicializarUI() {
-        // Solo inicializa el RecyclerView y carga los recordatorios
-        cargarRecordatorios()
+        // Inicializar SwipeRefreshLayout
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
+        swipeRefreshLayout.setOnRefreshListener {
+            Log.d("MainActivity", "Gesto de deslizar hacia abajo detectado")
+            refreshData()
+        }
+
+        // Configurar colores del SwipeRefreshLayout
+        swipeRefreshLayout.setColorSchemeResources(
+            android.R.color.holo_blue_bright,
+            android.R.color.holo_green_light,
+            android.R.color.holo_orange_light,
+            android.R.color.holo_red_light
+        )
+
+        // Configurar botones de filtrado
+        configurarBotonesFiltrado()
+
+        // Inicializar RecyclerView con adapter
+        configurarRecyclerView()
 
         // Si tienes un botón para agregar, aquí puedes poner el listener:
         val agregarButton = findViewById<FloatingActionButton>(R.id.dialogButton)
         agregarButton.setOnClickListener {
             mostrarDialogoAgregarRecordatorio()
+        }
+    }
+
+    private fun configurarBotonesFiltrado() {
+        val btnPendientes = findViewById<Button>(R.id.button6)
+        val btnCompletados = findViewById<Button>(R.id.button5)
+        val btnExpirados = findViewById<Button>(R.id.button7)
+
+        btnPendientes.setOnClickListener {
+            filtroActual = "PENDIENTES"
+            actualizarEstadoBotones()
+            cargarRecordatorios()
+        }
+
+        btnCompletados.setOnClickListener {
+            filtroActual = "COMPLETADOS"
+            actualizarEstadoBotones()
+            cargarRecordatorios()
+        }
+
+        btnExpirados.setOnClickListener {
+            filtroActual = "EXPIRADOS"
+            actualizarEstadoBotones()
+            cargarRecordatorios()
+        }
+
+        // Establecer estado inicial
+        actualizarEstadoBotones()
+    }
+
+    private fun actualizarEstadoBotones() {
+        val btnPendientes = findViewById<Button>(R.id.button6)
+        val btnCompletados = findViewById<Button>(R.id.button5)
+        val btnExpirados = findViewById<Button>(R.id.button7)
+
+        // Resetear todos los botones
+        btnPendientes.alpha = 0.6f
+        btnCompletados.alpha = 0.6f
+        btnExpirados.alpha = 0.6f
+
+        // Resaltar el botón activo
+        when (filtroActual) {
+            "PENDIENTES" -> btnPendientes.alpha = 1.0f
+            "COMPLETADOS" -> btnCompletados.alpha = 1.0f
+            "EXPIRADOS" -> btnExpirados.alpha = 1.0f
+        }
+    }
+
+    private fun configurarRecyclerView() {
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewRecordatorios)
+        adapter = RecordatorioAdapter(
+            onDeleteClick = { recordatorio ->
+                eliminarRecordatorio(recordatorio)
+            },
+            onEditClick = { recordatorio ->
+                editarRecordatorio(recordatorio)
+            },
+            onItemClick = { recordatorio ->
+                editarRecordatorio(recordatorio)
+            },
+            onStatusChange = { recordatorio ->
+                cambiarStatusRecordatorio(recordatorio)
+            }
+        )
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
+    }
+
+    /**
+     * Refresca los datos solicitando sincronización completa y recargando la vista
+     */
+    private fun refreshData() {
+        lifecycleScope.launch {
+            try {
+                Log.d("MainActivity", "Iniciando refresco de datos...")
+
+                // Forzar sincronización completa
+                synchronizer.forceSyncAll()
+
+                // Pequeño delay para permitir que la sincronización se procese
+                kotlinx.coroutines.delay(1000)
+
+                // Recargar datos en el hilo principal
+                cargarRecordatorios()
+
+                // Detener la animación de refresco
+                swipeRefreshLayout.isRefreshing = false
+
+                Log.d("MainActivity", "Datos refrescados exitosamente")
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error al refrescar datos: ${e.message}")
+                swipeRefreshLayout.isRefreshing = false
+            }
         }
     }
 
@@ -121,23 +293,13 @@ class MainActivity : AppCompatActivity() {
 
     // Carga los recordatorios desde la base de datos y los muestra en el RecyclerView
     private fun cargarRecordatorios() {
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewRecordatorios)
-        val adapter = RecordatorioAdapter(
-            onDeleteClick = { recordatorio ->
-                eliminarRecordatorio(recordatorio)
-            },
-            onEditClick = { recordatorio ->
-                editarRecordatorio(recordatorio)
-            },
-            onItemClick = { recordatorio ->
-                editarRecordatorio(recordatorio)
-            }
-        )
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(this)
-
         lifecycleScope.launch {
-            val lista = db.recordatorioDao().getAll()
+            val lista = when (filtroActual) {
+                "PENDIENTES" -> db.recordatorioDao().getPendientes()
+                "COMPLETADOS" -> db.recordatorioDao().getCompletados()
+                "EXPIRADOS" -> db.recordatorioDao().getExpirados(System.currentTimeMillis())
+                else -> db.recordatorioDao().getAll()
+            }
             adapter.submitList(lista)
         }
     }
@@ -293,5 +455,18 @@ class MainActivity : AppCompatActivity() {
                 onDateTimeSelected(cal.timeInMillis, formattedDateTime)
             }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
         }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+    }
+
+    private fun cambiarStatusRecordatorio(recordatorio: Recordatorio) {
+        lifecycleScope.launch {
+            // Actualizar en la base de datos local
+            db.recordatorioDao().update(recordatorio)
+
+            // Sincronizar con el reloj
+            synchronizer.syncUpdatedRecordatorio(recordatorio)
+
+            // Recargar la lista con el filtro actual
+            cargarRecordatorios()
+        }
     }
 }

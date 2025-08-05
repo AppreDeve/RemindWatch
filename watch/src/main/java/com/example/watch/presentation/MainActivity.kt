@@ -3,7 +3,12 @@ package com.example.watch.presentation
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.hardware.SensorManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -21,12 +26,17 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.*
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), SensorEventListener {
 
     private val viewModel: RecordatorioViewModel by viewModel()
     private lateinit var adapter: RecordatorioAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var emptyView: TextView
+    private lateinit var sensorManager: SensorManager
+    private var acelerometro: Sensor? = null
+    private var baseRotationX: Float = 0f
+    private var isBaseRotationSet = false
+    private var lastForwardTimestamp: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,61 +69,173 @@ class MainActivity : ComponentActivity() {
         findViewById<View>(R.id.btn_add).setOnClickListener {
             mostrarDialogoAgregarRecordatorio()
         }
+
+        // Conectar el botón de sincronización
+        findViewById<View>(R.id.btn_update).setOnClickListener {
+            Log.d("MainActivity", "Botón de sincronización presionado")
+            refreshData()
+        }
+
+        // Inicializa el sensor de acelerómetro
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        acelerometro = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        if (acelerometro != null) {
+            Log.d("SensorDebug", "Acelerómetro disponible")
+        } else {
+            Log.e("SensorDebug", "Acelerómetro NO disponible")
+        }
+
+        // Solicitar sincronización completa al iniciar la app
+        requestInitialSync()
+    }
+
+    /**
+     * Solicita sincronización completa al iniciar la aplicación del reloj
+     */
+    private fun requestInitialSync() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Notificar al móvil que el reloj está conectado
+                RecordatorioSyncHelper.notifyWatchConnected(applicationContext)
+                // Solicitar sincronización completa
+                RecordatorioSyncHelper.requestFullSync(applicationContext)
+                Log.d("MainActivity", "Solicitud de sincronización inicial enviada")
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error en sincronización inicial: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Refresca los datos solicitando sincronización y recargando la vista
+     */
+    private fun refreshData() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                Log.d("MainActivity", "Iniciando refresco de datos...")
+                // Solicitar sincronización completa del móvil
+                RecordatorioSyncHelper.requestFullSync(applicationContext)
+
+                // Recargar datos locales en el hilo principal
+                runOnUiThread {
+                    viewModel.loadRecordatorios()
+                    Log.d("MainActivity", "Datos refrescados exitosamente")
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error al refrescar datos: ${e.message}")
+            }
+        }
     }
 
     override fun onResume() {
         super.onResume()
         // Recargar los datos cuando la actividad vuelva a primer plano
         viewModel.loadRecordatorios()
+        // Registrar el listener del sensor
+        acelerometro?.also { sensor ->
+            val registered = sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+            Log.d("SensorDebug", "Sensor registrado: $registered")
+        }
     }
 
+    override fun onPause() {
+        super.onPause()
+        // Desregistrar el listener del sensor
+        sensorManager.unregisterListener(this)
+        Log.d("SensorDebug", "Sensor desregistrado")
+    }
+
+    // Detecta el gesto de girar hacia adelante
+    override fun onSensorChanged(event: SensorEvent) {
+        val x = event.values[0]
+        val y = event.values[1]
+        val z = event.values[2]
+        val now = System.currentTimeMillis()
+        val rotationX = Math.atan2(y.toDouble(), Math.sqrt((x * x + z * z).toDouble())) * 180 / Math.PI
+        // Solo captura la rotación X, sin comparar con baseRotationX
+        Log.d("SensorDebug", "RotationX: $rotationX")
+        if (rotationX > 30) {
+            Log.d("SensorDebug", "Rotación X > 30 detectada")
+            if (lastForwardTimestamp + 1500 < now) {
+                lastForwardTimestamp = now
+                Log.d("SensorDebug", "Gesto detectado: abrir ventana de agregar tarea")
+                runOnUiThread {
+                    try {
+                        Log.d("SensorDebug", "Intentando mostrar diálogo...")
+                        mostrarDialogoAgregarRecordatorio()
+                        Log.d("SensorDebug", "Diálogo mostrado exitosamente")
+                    } catch (e: Exception) {
+                        Log.e("SensorDebug", "Error al mostrar diálogo: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // No es necesario implementar para este caso
+    }
+
+
+
     private fun mostrarDialogoAgregarRecordatorio() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_add_recordatorio, null)
-        val tituloEditText = dialogView.findViewById<EditText>(R.id.tituloEditText)
-        val descripcionEditText = dialogView.findViewById<EditText>(R.id.descripcionEditText)
-        val vencimientoEditText = dialogView.findViewById<EditText>(R.id.vencimientoEditText)
-        val recordatorioEditText = dialogView.findViewById<EditText>(R.id.recordatorioEditText)
-        val guardarButton = dialogView.findViewById<Button>(R.id.guardarButton)
+        Log.d("SensorDebug", "Iniciando mostrarDialogoAgregarRecordatorio")
+        try {
+            val dialogView = layoutInflater.inflate(R.layout.dialog_add_recordatorio, null)
+            Log.d("SensorDebug", "Layout inflado correctamente")
 
-        var vencimientoTimestamp = 0L
-        var recordatorioTimestamp = 0L
+            val tituloEditText = dialogView.findViewById<EditText>(R.id.tituloEditText)
+            val descripcionEditText = dialogView.findViewById<EditText>(R.id.descripcionEditText)
+            val vencimientoTextView = dialogView.findViewById<TextView>(R.id.vencimientoTextView)
+            val recordatorioTextView = dialogView.findViewById<TextView>(R.id.recordatorioTextView)
+            val iconoVencimiento = dialogView.findViewById<View>(R.id.iconoVencimiento)
+            val iconoRecordatorio = dialogView.findViewById<View>(R.id.iconoRecordatorio)
+            val guardarButton = dialogView.findViewById<Button>(R.id.guardarButton)
 
-        vencimientoEditText.setOnClickListener {
-            showDatePicker { timestamp, formattedDate ->
-                vencimientoTimestamp = timestamp
-                vencimientoEditText.setText(formattedDate)
+            Log.d("SensorDebug", "Views encontradas correctamente")
+
+            var vencimientoTimestamp = 0L
+            var recordatorioTimestamp = 0L
+
+            iconoVencimiento.setOnClickListener {
+                showDatePicker { timestamp, formattedDate ->
+                    vencimientoTimestamp = timestamp
+                    vencimientoTextView.text = formattedDate
+                }
             }
-        }
-        recordatorioEditText.setOnClickListener {
-            showDateTimePicker { timestamp, formattedDateTime ->
-                recordatorioTimestamp = timestamp
-                recordatorioEditText.setText(formattedDateTime)
+            iconoRecordatorio.setOnClickListener {
+                showDateTimePicker { timestamp, formattedDateTime ->
+                    recordatorioTimestamp = timestamp
+                    recordatorioTextView.text = formattedDateTime
+                }
             }
-        }
 
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setCancelable(true)
-            .create()
+            val dialog = AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setCancelable(true)
+                .create()
 
-        guardarButton.setOnClickListener {
-            val titulo = tituloEditText.text.toString()
-            val descripcion = descripcionEditText.text.toString()
-            val recordatorio = Recordatorio(
-                titulo = titulo,
-                descripcion = descripcion,
-                fechaHora = System.currentTimeMillis(),
-                vencimiento = vencimientoTimestamp,
-                recordatorio = recordatorioTimestamp
-            )
-            CoroutineScope(Dispatchers.IO).launch {
-                RecordatorioDatabase.getDatabase(applicationContext).recordatorioDao().insert(recordatorio)
-                RecordatorioSyncHelper.syncRecordatorioConMovil(applicationContext, recordatorio)
+            guardarButton.setOnClickListener {
+                val titulo = tituloEditText.text.toString()
+                val descripcion = descripcionEditText.text.toString()
+                val recordatorio = Recordatorio(
+                    titulo = titulo,
+                    descripcion = descripcion,
+                    fechaHora = System.currentTimeMillis(),
+                    vencimiento = vencimientoTimestamp,
+                    recordatorio = recordatorioTimestamp
+                )
+                CoroutineScope(Dispatchers.IO).launch {
+                    RecordatorioDatabase.getDatabase(applicationContext).recordatorioDao().insert(recordatorio)
+                    RecordatorioSyncHelper.syncRecordatorioConMovil(applicationContext, recordatorio)
+                }
+                dialog.dismiss()
             }
-            dialog.dismiss()
-        }
 
-        dialog.show()
+            dialog.show()
+        } catch (e: Exception) {
+            Log.e("SensorDebug", "Error en mostrarDialogoAgregarRecordatorio: ${e.message}")
+        }
     }
 
     private fun showDatePicker(onDateSelected: (Long, String) -> Unit) {

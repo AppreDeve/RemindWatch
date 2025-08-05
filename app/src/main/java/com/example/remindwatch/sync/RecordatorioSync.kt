@@ -80,6 +80,20 @@ class RecordatorioSync(private val context: Context) {
     }
 
     /**
+     * Solicita una sincronización completa desde el reloj
+     */
+    suspend fun requestFullSync() {
+        sendMessage("/request_full_sync", ByteArray(0))
+    }
+
+    /**
+     * Notifica al reloj que el móvil se ha conectado
+     */
+    suspend fun notifyMobileConnected() {
+        sendMessage("/mobile_connected", ByteArray(0))
+    }
+
+    /**
      * Método auxiliar para enviar mensajes a todos los nodos conectados
      */
     private suspend fun sendMessage(path: String, data: ByteArray) = withContext(Dispatchers.IO) {

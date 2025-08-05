@@ -8,24 +8,18 @@ import kotlinx.coroutines.launch
 
 /**
  * Clase que maneja la sincronización de recordatorios entre el teléfono y el reloj
+ * Actualizada para manejar estados offline y sincronización bidireccional
  */
 class RecordatorioSynchronizer(context: Context) {
 
-    private val recordatorioSync: RecordatorioSync = RecordatorioSync(context)
+    private val syncManager: SyncManager = SyncManager(context)
 
     /**
      * Sincroniza un recordatorio recién creado con el reloj
      */
     fun syncCreatedRecordatorio(recordatorio: Recordatorio) {
         CoroutineScope(Dispatchers.IO).launch {
-            recordatorioSync.sendRecordatorio(
-                recordatorio.id,
-                recordatorio.titulo,
-                recordatorio.descripcion ?: "",
-                recordatorio.fechaHora,
-                recordatorio.vencimiento ?: 0L,
-                recordatorio.recordatorio ?: 0L
-            )
+            syncManager.scheduleCreateOrUpdate(recordatorio, "CREATE")
         }
     }
 
@@ -34,14 +28,7 @@ class RecordatorioSynchronizer(context: Context) {
      */
     fun syncUpdatedRecordatorio(recordatorio: Recordatorio) {
         CoroutineScope(Dispatchers.IO).launch {
-            recordatorioSync.sendRecordatorio(
-                recordatorio.id,
-                recordatorio.titulo,
-                recordatorio.descripcion ?: "",
-                recordatorio.fechaHora,
-                recordatorio.vencimiento ?: 0L,
-                recordatorio.recordatorio ?: 0L
-            )
+            syncManager.scheduleCreateOrUpdate(recordatorio, "UPDATE")
         }
     }
 
@@ -50,7 +37,7 @@ class RecordatorioSynchronizer(context: Context) {
      */
     fun syncDeletedRecordatorio(id: Int) {
         CoroutineScope(Dispatchers.IO).launch {
-            recordatorioSync.sendDeleteRecordatorio(id)
+            syncManager.scheduleDelete(id)
         }
     }
 
@@ -58,19 +45,29 @@ class RecordatorioSynchronizer(context: Context) {
      * Sincroniza toda la lista de recordatorios con el reloj
      */
     fun syncAllRecordatorios(recordatorios: List<Recordatorio>) {
-        val mappedRecordatorios = recordatorios.map { recordatorio ->
-            mapOf(
-                "id" to recordatorio.id,
-                "titulo" to recordatorio.titulo,
-                "descripcion" to (recordatorio.descripcion ?: ""),
-                "fechaHora" to recordatorio.fechaHora,
-                "vencimiento" to (recordatorio.vencimiento ?: 0L),
-                "recordatorio" to (recordatorio.recordatorio ?: 0L)
-            )
-        }
-
         CoroutineScope(Dispatchers.IO).launch {
-            recordatorioSync.sendRecordatoriosList(mappedRecordatorios)
+            // Primero programar todas las operaciones individuales
+            recordatorios.forEach { recordatorio ->
+                syncManager.scheduleCreateOrUpdate(recordatorio, "CREATE")
+            }
+            // Luego sincronizar el estado completo
+            syncManager.syncCompleteState()
         }
+    }
+
+    /**
+     * Fuerza una sincronización completa
+     */
+    fun forceSyncAll() {
+        CoroutineScope(Dispatchers.IO).launch {
+            syncManager.syncCompleteState()
+        }
+    }
+
+    /**
+     * Maneja la reconexión del reloj
+     */
+    fun onWearReconnected() {
+        syncManager.onWearReconnected()
     }
 }
