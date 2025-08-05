@@ -92,7 +92,7 @@
                 android:clickable="true"
                 android:cursorVisible="false"
                 android:focusable="false"
-                android:hint="Vencimiento"
+                android:hint="Fecha de Vencimiento"
                 android:textColor="#444444"
                 android:textSize="14sp" />
 
