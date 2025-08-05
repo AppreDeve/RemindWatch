@@ -32,40 +32,63 @@
 
     </LinearLayout>
 
-    <!-- Vencimiento -->
-    <com.google.android.material.textfield.TextInputLayout
+    <!-- Vencimiento con icono -->
+    <LinearLayout
+        android:id="@+id/vencimientoLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Vencimiento"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/selector_background"
+        android:padding="16dp"
         android:layout_marginBottom="12dp">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/vencimientoEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="datetime"
-            android:focusable="false"
-            android:clickable="true"
-            android:cursorVisible="false"
-            android:textSize="16sp" />
-    </com.google.android.material.textfield.TextInputLayout>
+        <ImageView
+            android:id="@+id/iconoVencimiento"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_calendar"
+            android:contentDescription="Seleccionar vencimiento"
+            android:layout_marginEnd="16dp" />
 
-    <!-- Recordatorio -->
-    <com.google.android.material.textfield.TextInputLayout
+        <TextView
+            android:id="@+id/vencimientoTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Seleccionar fecha de vencimiento"
+            android:textSize="16sp"
+            android:textColor="#666666" />
+    </LinearLayout>
+
+    <!-- Recordatorio con icono -->
+    <LinearLayout
+        android:id="@+id/recordatorioLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Recordatorio"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/selector_background"
+        android:padding="16dp"
         android:layout_marginBottom="12dp">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/recordatorioEditText"
-            android:layout_width="match_parent"
+        <ImageView
+            android:id="@+id/iconoRecordatorio"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_bell"
+            android:contentDescription="Seleccionar recordatorio"
+            android:layout_marginEnd="16dp" />
+
+        <TextView
+            android:id="@+id/recordatorioTextView"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="datetime"
-            android:textSize="16sp" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_weight="1"
+            android:text="Seleccionar fecha y hora de recordatorio"
+            android:textSize="16sp"
+            android:textColor="#666666" />
+    </LinearLayout>
 
     <!-- Descripción -->
     <com.google.android.material.textfield.TextInputLayout
@@ -83,15 +106,5 @@
             android:minLines="3"
             android:textSize="16sp" />
     </com.google.android.material.textfield.TextInputLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="start"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="4dp">
-
-    </LinearLayout>
 
 </LinearLayout>

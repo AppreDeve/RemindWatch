@@ -8,8 +8,10 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -18,12 +20,16 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 import com.example.remindwatch.sync.RecordatorioSynchronizer
+import com.example.remindwatch.notifications.NotificationManager
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import data.database.RecordatorioDatabase
 import data.database.entity.Recordatorio
 import kotlinx.coroutines.launch
 import java.util.Calendar
+
+import android.os.Build
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -54,6 +60,18 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // 🔒 Solicitar permiso para notificaciones (Android 13+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissions(
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    1001
+                )
+            }
+        }
 
         // Inicializa la base de datos
         db = RecordatorioDatabase.getDatabase(this)
@@ -109,6 +127,7 @@ class MainActivity : AppCompatActivity() {
         // Liberar listener de sacudida
         shakeListener?.let { sensorManager.unregisterListener(it) }
     }
+
 
     // Configura los elementos de la interfaz y sus listeners
     private fun inicializarUI() {
@@ -238,8 +257,11 @@ class MainActivity : AppCompatActivity() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_reminder, null)
         val tituloEditText = dialogView.findViewById<EditText>(R.id.tituloEditText)
         val descripcionEditText = dialogView.findViewById<EditText>(R.id.descripcionEditText)
-        val recordatorioEditText = dialogView.findViewById<EditText>(R.id.recordatorioEditText)
-        val vencimientoEditText = dialogView.findViewById<EditText>(R.id.vencimientoEditText)
+
+        val vencimientoLayout = dialogView.findViewById<View>(R.id.vencimientoLayout)
+        val recordatorioLayout = dialogView.findViewById<View>(R.id.recordatorioDateLayout)
+        val vencimientoTextView = dialogView.findViewById<TextView>(R.id.vencimientoTextView)
+        val recordatorioTextView = dialogView.findViewById<TextView>(R.id.recordatorioTextView)
         val guardarButton = dialogView.findViewById<Button>(R.id.guardarButton)
 
         val dialog = AlertDialog.Builder(this)
@@ -249,17 +271,17 @@ class MainActivity : AppCompatActivity() {
 
         dialog.show()
 
-        vencimientoEditText.setOnClickListener {
+        vencimientoLayout.setOnClickListener {
             showDatePicker { timestamp, formattedDate ->
                 vencimientoTimestamp = timestamp
-                vencimientoEditText.setText(formattedDate)
+                vencimientoTextView.text = formattedDate
             }
         }
 
-        recordatorioEditText.setOnClickListener {
+        recordatorioLayout.setOnClickListener {
             showDateTimePicker { timestamp, formattedDateTime ->
                 recordatorioTimestamp = timestamp
-                recordatorioEditText.setText(formattedDateTime)
+                recordatorioTextView.text = formattedDateTime
             }
         }
 
@@ -267,8 +289,8 @@ class MainActivity : AppCompatActivity() {
             guardarRecordatorio(
                 tituloEditText,
                 descripcionEditText,
-                recordatorioEditText,
-                vencimientoEditText
+                vencimientoTextView,
+                recordatorioTextView
             )
             dialog.dismiss()
         }
@@ -291,8 +313,8 @@ class MainActivity : AppCompatActivity() {
     private fun guardarRecordatorio(
         tituloEditText: EditText,
         descripcionEditText: EditText,
-        recordatorioEditText: EditText,
-        vencimientoEditText: EditText
+        vencimientoTextView: TextView,
+        recordatorioTextView: TextView
     ) {
         val titulo = tituloEditText.text.toString()
         val descripcion = descripcionEditText.text.toString()
@@ -303,31 +325,34 @@ class MainActivity : AppCompatActivity() {
                 descripcion = descripcion,
                 fechaHora = recordatorioTimestamp,
                 vencimiento = if (vencimientoTimestamp != 0L) vencimientoTimestamp else 0L,
-                recordatorio = if (recordatorioTimestamp != 0L) recordatorioTimestamp else 0L
+                recordatorio = if (recordatorioTimestamp != 0L) recordatorioTimestamp else 0L,
+                status = true
             )
 
             lifecycleScope.launch {
-                // Insertar en la base de datos local
                 val id = db.recordatorioDao().insert(recordatorio)
-
-                // Obtener el recordatorio con el ID asignado
                 val recordatorioConId = recordatorio.copy(id = id.toInt())
+
+                // Programar la notificación
+                NotificationManager(applicationContext).scheduleNotificationForRecordatorio(recordatorioConId)
 
                 // Sincronizar con el reloj
                 synchronizer.syncCreatedRecordatorio(recordatorioConId)
-
-                cargarRecordatorios() // Actualiza la lista
+                cargarRecordatorios()
             }
 
             // Limpia los campos de texto
             listOf(
                 tituloEditText,
-                descripcionEditText,
-                recordatorioEditText,
-                vencimientoEditText
+                descripcionEditText
             ).forEach {
                 it.text.clear()
             }
+
+            vencimientoTextView.text = "Seleccionar fecha de vencimiento"
+            recordatorioTextView.text = "Seleccionar fecha y hora de recordatorio"
+            vencimientoTimestamp = 0L
+            recordatorioTimestamp = 0L
         }
     }
 
@@ -350,8 +375,12 @@ class MainActivity : AppCompatActivity() {
 
         val tituloEditText = dialogView.findViewById<EditText>(R.id.tituloEditText)
         val descripcionEditText = dialogView.findViewById<EditText>(R.id.descripcionEditText)
-        val vencimientoEditText = dialogView.findViewById<EditText>(R.id.vencimientoEditText)
-        val recordatorioEditText = dialogView.findViewById<EditText>(R.id.recordatorioEditText)
+
+        // Cambiar a usar los nuevos elementos con iconos
+        val vencimientoLayout = dialogView.findViewById<View>(R.id.vencimientoLayout)
+        val recordatorioLayout = dialogView.findViewById<View>(R.id.recordatorioLayout)
+        val vencimientoTextView = dialogView.findViewById<TextView>(R.id.vencimientoTextView)
+        val recordatorioTextView = dialogView.findViewById<TextView>(R.id.recordatorioTextView)
 
         // Variables para almacenar los nuevos valores de timestamp
         var nuevoVencimiento = recordatorio.vencimiento ?: 0L
@@ -360,24 +389,32 @@ class MainActivity : AppCompatActivity() {
         // Rellenar los campos con los datos actuales
         tituloEditText.setText(recordatorio.titulo)
         descripcionEditText.setText(recordatorio.descripcion)
+
+        // Mostrar las fechas actuales en los TextViews
         if (nuevoVencimiento != 0L) {
-            vencimientoEditText.setText(android.text.format.DateFormat.format("yyyy-MM-dd", nuevoVencimiento))
-        }
-        if (nuevoRecordatorio != 0L) {
-            recordatorioEditText.setText(android.text.format.DateFormat.format("yyyy-MM-dd HH:mm", nuevoRecordatorio))
+            vencimientoTextView.text = android.text.format.DateFormat.format("yyyy-MM-dd", nuevoVencimiento)
+        } else {
+            vencimientoTextView.text = "Seleccionar fecha de vencimiento"
         }
 
-        // Al hacer click en los campos de fecha, mostrar el selector
-        vencimientoEditText.setOnClickListener {
+        if (nuevoRecordatorio != 0L) {
+            recordatorioTextView.text = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm", nuevoRecordatorio)
+        } else {
+            recordatorioTextView.text = "Seleccionar fecha y hora de recordatorio"
+        }
+
+        // Configurar click listeners para los iconos
+        vencimientoLayout.setOnClickListener {
             showDatePicker { timestamp, formattedDate ->
                 nuevoVencimiento = timestamp
-                vencimientoEditText.setText(formattedDate)
+                vencimientoTextView.text = formattedDate
             }
         }
-        recordatorioEditText.setOnClickListener {
+
+        recordatorioLayout.setOnClickListener {
             showDateTimePicker { timestamp, formattedDateTime ->
                 nuevoRecordatorio = timestamp
-                recordatorioEditText.setText(formattedDateTime)
+                recordatorioTextView.text = formattedDateTime
             }
         }
 

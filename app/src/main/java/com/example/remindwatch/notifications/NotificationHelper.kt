@@ -110,7 +110,7 @@ class NotificationHelper(private val context: Context) {
     }
 
     /**
-     * Muestra una notificación inmediata
+     * Muestra una notificación al momento
      * @param recordatorioId ID del recordatorio
      * @param titulo Título del recordatorio
      * @param descripcion Descripción del recordatorio

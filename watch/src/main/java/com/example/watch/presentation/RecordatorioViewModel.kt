@@ -23,4 +23,5 @@ class RecordatorioViewModel(private val recordatorioDao: RecordatorioDao) : View
             _recordatorios.postValue(lista)
         }
     }
+
 }
