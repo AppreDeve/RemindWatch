@@ -1,7 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:layout_width="wrap_content"
-    android:layout_height="match_parent">
+    android:background="@android:color/white"
+    android:padding="24dp"
+    android:layout_margin="24dp"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
+
+    <!-- Título -->
+    <TextView
+        android:id="@+id/tituloTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Título del recordatorio"
+        android:textStyle="bold"
+        android:textSize="30sp"
+        android:textColor="#212121"
+        android:focusable="true"
+        android:importantForAccessibility="yes" />
+
+    <!-- Descripción -->
+    <TextView
+        android:id="@+id/descripcionTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Descripción del recordatorio"
+        android:textSize="26sp"
+        android:textColor="#444444"
+        android:layout_marginTop="8dp"
+        android:focusable="true" />
+
+    <!-- Fecha -->
+    <TextView
+        android:id="@+id/vencimientoTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Vence: 12/08/2025"
+        android:textSize="24sp"
+        android:textColor="#FF5722"
+        android:layout_marginTop="8dp"
+        android:focusable="true" />
+
+    <!-- Detalles -->
+    <TextView
+        android:id="@+id/recordatorioTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Detalles adicionales..."
+        android:textSize="20sp"
+        android:textColor="#757575"
+        android:layout_marginTop="8dp"
+        android:focusable="true" />
+
+    <!-- Check para completado -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="16dp">
+
+        <CheckBox
+            android:id="@+id/completadoCheck"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="Marcar como completado"
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+
+        <TextView
+            android:id="@+id/completadoText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Marcar como completado"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginStart="12dp"
+            android:focusable="true" />
+    </LinearLayout>
+
+    <!-- Botón eliminar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="16dp">
+
+        <ImageButton
+            android:id="@+id/deleteButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackground"
+            android:contentDescription="Eliminar"
+            android:focusable="true"
+            android:focusableInTouchMode="false"
+            android:src="@android:drawable/ic_menu_delete"
+            card_view:tint="#D32F2F" />
+    </LinearLayout>
 
 </LinearLayout>
