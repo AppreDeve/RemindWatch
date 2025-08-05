@@ -64,7 +64,7 @@
                 android:id="@+id/recordatorioEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Detalles adicionales"
+                android:hint="Recordatorio"
                 android:inputType="textMultiLine"
                 android:minLines="2"
                 android:textColor="#000000"
@@ -85,16 +85,16 @@
             app:endIconDrawable="@drawable/ic_calendar"
             app:endIconContentDescription="Seleccionar fecha">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/vencimientoEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Fecha y hora"
-            android:focusable="false"
-            android:clickable="true"
-            android:cursorVisible="false"
-            android:textColor="#444444"
-            android:textSize="14sp" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/vencimientoEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:cursorVisible="false"
+                android:focusable="false"
+                android:hint="Vencimiento"
+                android:textColor="#444444"
+                android:textSize="14sp" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
