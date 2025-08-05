@@ -46,6 +46,12 @@
                 <data android:scheme="wear" android:host="*" android:pathPrefix="/" />
             </intent-filter>
         </service>
+
+        <receiver
+            android:name="com.example.watch.notifications.NotificationReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
     </application>
 
 </manifest>
