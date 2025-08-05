@@ -98,8 +98,7 @@
             android:contentDescription="Eliminar"
             android:focusable="true"
             android:focusableInTouchMode="false"
-            android:src="@android:drawable/ic_menu_delete"
-            card_view:tint="#D32F2F" />
+            android:src="@android:drawable/ic_menu_delete" />
     </LinearLayout>
 
 </LinearLayout>

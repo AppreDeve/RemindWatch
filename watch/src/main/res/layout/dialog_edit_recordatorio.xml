@@ -107,20 +107,6 @@
                 android:textColor="@android:color/black"
                 android:textColorHint="#AAAAAA" />
 
-            <!-- Botón Eliminar -->
-            <Button
-                android:id="@+id/eliminarButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Eliminar"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:backgroundTint="#FF0000"
-                android:minHeight="48dp"
-                android:minWidth="100dp" />
-
         </LinearLayout>
     </ScrollView>
 

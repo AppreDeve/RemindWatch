@@ -256,7 +256,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         val vencimientoTextView = dialogView.findViewById<TextView>(R.id.vencimientoTextView)
         val iconoRecordatorio = dialogView.findViewById<ImageButton>(R.id.iconoRecordatorio)
         val recordatorioTextView = dialogView.findViewById<TextView>(R.id.recordatorioTextView)
-        val eliminarButton = dialogView.findViewById<Button>(R.id.eliminarButton)
+
 
         val formatterFecha = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val formatterFechaHora = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
@@ -317,17 +317,6 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             }
             .setNegativeButton("Cancelar", null)
             .create()
-
-        eliminarButton.setOnClickListener {
-            lifecycleScope.launch {
-                RecordatorioDatabase.getDatabase(applicationContext)
-                    .recordatorioDao()
-                    .deleteById(recordatorio.id)  // elimina por id
-                RecordatorioSyncHelper.syncRecordatorioConMovil(applicationContext, recordatorio)
-                viewModel.loadRecordatorios()
-            }
-            dialog.dismiss()
-        }
 
         dialog.show()
     }
