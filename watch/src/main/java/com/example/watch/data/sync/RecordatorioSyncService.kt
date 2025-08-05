@@ -80,14 +80,18 @@ class RecordatorioSyncService : WearableListenerService() {
             // Guarda todos los recordatorios en la base de datos en un hilo secundario
             CoroutineScope(Dispatchers.IO).launch {
                 recordatorios.forEach { recordatorio ->
+                    recordatorioDao.insert(recordatorio)
+                }
+                Log.d(TAG, "Se guardaron ${recordatorios.size} recordatorios en la base de datos")
+            }
+        } catch (e: Exception) {
             Log.e(TAG, "Error al procesar la lista de recordatorios: ${e.message}", e)
         }
-                Log.d(TAG, "Se guardaron ${recordatorios.size} recordatorios en la base de datos")
+    }
 
     private fun handleDeleteRecordatorio(messageEvent: MessageEvent) {
-            Log.e(TAG, "Error al procesar la lista de recordatorios: ${e.message}", e)
-
         try {
+            val data = String(messageEvent.data)
             val id = data.toInt()
             CoroutineScope(Dispatchers.IO).launch {
                 // Asumiendo que tienes un metodo delete en tu DAO
@@ -95,7 +99,6 @@ class RecordatorioSyncService : WearableListenerService() {
                 Log.d(TAG, "Recordatorio eliminado: $id")
             }
         } catch (e: Exception) {
-                // Asumiendo que tienes un metodo delete en tu DAO
             Log.e(TAG, "Error al eliminar el recordatorio: ${e.message}", e)
         }
     }
@@ -104,3 +107,10 @@ class RecordatorioSyncService : WearableListenerService() {
         return Recordatorio(
             id = json.optInt("id", 0),
             titulo = json.getString("titulo"),
+            descripcion = json.optString("descripcion", ""),
+            fechaHora = json.optLong("fechaHora", 0L),
+            vencimiento = json.optLong("vencimiento", 0L),
+            recordatorio = json.optLong("recordatorio", 0L)
+        )
+    }
+}
