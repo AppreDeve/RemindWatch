@@ -25,6 +25,13 @@ import com.example.watch.data.database.RecordatorioDatabase
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.*
+import android.text.Editable
+import androidx.lifecycle.lifecycleScope
+import java.text.SimpleDateFormat
+import android.widget.ImageButton
+
+
+
 
 class MainActivity : ComponentActivity(), SensorEventListener {
 
@@ -47,7 +54,9 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         emptyView = findViewById(R.id.empty_view)
 
         // Configurar el adaptador
-        adapter = RecordatorioAdapter()
+        adapter = RecordatorioAdapter(onEditClick = { recordatorio ->
+            editarRecordatorio(recordatorio)
+        })
         recyclerView.adapter = adapter
 
         // Observar los cambios en los recordatorios
@@ -236,6 +245,91 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         } catch (e: Exception) {
             Log.e("SensorDebug", "Error en mostrarDialogoAgregarRecordatorio: ${e.message}")
         }
+    }
+
+    private fun editarRecordatorio(recordatorio: Recordatorio) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_edit_recordatorio, null)
+
+        val tituloEditText = dialogView.findViewById<EditText>(R.id.tituloEditText)
+        val descripcionEditText = dialogView.findViewById<EditText>(R.id.descripcionEditText)
+        val iconoVencimiento = dialogView.findViewById<ImageButton>(R.id.iconoVencimiento)
+        val vencimientoTextView = dialogView.findViewById<TextView>(R.id.vencimientoTextView)
+        val iconoRecordatorio = dialogView.findViewById<ImageButton>(R.id.iconoRecordatorio)
+        val recordatorioTextView = dialogView.findViewById<TextView>(R.id.recordatorioTextView)
+        val eliminarButton = dialogView.findViewById<Button>(R.id.eliminarButton)
+
+        val formatterFecha = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val formatterFechaHora = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+
+        // Mostrar datos actuales
+        tituloEditText.setText(recordatorio.titulo)
+        descripcionEditText.setText(recordatorio.descripcion)
+
+        if (recordatorio.vencimiento != null && recordatorio.vencimiento != 0L) {
+            vencimientoTextView.text = formatterFecha.format(Date(recordatorio.vencimiento))
+        } else {
+            vencimientoTextView.text = "Sin fecha"
+        }
+        if (recordatorio.recordatorio != null && recordatorio.recordatorio != 0L) {
+            recordatorioTextView.text = formatterFechaHora.format(Date(recordatorio.recordatorio))
+        } else {
+            recordatorioTextView.text = "Sin fecha"
+        }
+
+        var nuevoVencimiento = recordatorio.vencimiento ?: 0L
+        var nuevoRecordatorio = recordatorio.recordatorio ?: 0L
+
+        // Click para elegir fecha de vencimiento
+        iconoVencimiento.setOnClickListener {
+            showDatePicker { timestamp, formattedDate ->
+                nuevoVencimiento = timestamp
+                vencimientoTextView.text = formattedDate
+            }
+        }
+
+        // Click para elegir fecha y hora de recordatorio
+        iconoRecordatorio.setOnClickListener {
+            showDateTimePicker { timestamp, formattedDateTime ->
+                nuevoRecordatorio = timestamp
+                recordatorioTextView.text = formattedDateTime
+            }
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Editar Recordatorio")
+            .setView(dialogView)
+            .setPositiveButton("Guardar") { _, _ ->
+                val nuevoTitulo = tituloEditText.text.toString()
+                val nuevaDescripcion = descripcionEditText.text.toString()
+                val recordatorioActualizado = recordatorio.copy(
+                    titulo = nuevoTitulo,
+                    descripcion = nuevaDescripcion,
+                    vencimiento = nuevoVencimiento,
+                    recordatorio = nuevoRecordatorio
+                )
+                lifecycleScope.launch {
+                    RecordatorioDatabase.getDatabase(applicationContext)
+                        .recordatorioDao()
+                        .update(recordatorioActualizado)
+                    RecordatorioSyncHelper.syncRecordatorioConMovil(applicationContext, recordatorioActualizado)
+                    viewModel.loadRecordatorios()
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .create()
+
+        eliminarButton.setOnClickListener {
+            lifecycleScope.launch {
+                RecordatorioDatabase.getDatabase(applicationContext)
+                    .recordatorioDao()
+                    .deleteById(recordatorio.id)  // elimina por id
+                RecordatorioSyncHelper.syncRecordatorioConMovil(applicationContext, recordatorio)
+                viewModel.loadRecordatorios()
+            }
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun showDatePicker(onDateSelected: (Long, String) -> Unit) {

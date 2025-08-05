@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:background="#F5F5F5"
+    android:padding="8dp">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -12,52 +14,114 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:padding="20dp">
 
+            <!-- Título -->
             <EditText
                 android:id="@+id/tituloEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:autofillHints="username"
                 android:hint="Título"
                 android:inputType="textPersonName"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:background="@drawable/edittext_fondo"
+                android:padding="8dp"
+                android:layout_marginBottom="8dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="#AAAAAA" />
 
-            <EditText
-                android:id="@+id/vencimientoEditText"
+            <!-- Iconos y textos para vencimiento y recordatorio -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:autofillHints="date"
-                android:hint="Vencimiento"
-                android:inputType="datetime"
-                android:textSize="16sp" />
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginBottom="8dp">
 
-            <EditText
-                android:id="@+id/recordatorioEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:autofillHints="dateTime"
-                android:hint="Recordatorio"
-                android:inputType="datetime"
-                android:textSize="16sp" />
+                <!-- Selección de vencimiento -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
 
+                    <ImageButton
+                        android:id="@+id/iconoVencimiento"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_calendar"
+                        android:contentDescription="Seleccionar vencimiento"/>
+
+                    <TextView
+                        android:id="@+id/vencimientoTextView"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Sin fecha"
+                        android:textSize="14sp"
+                        android:textColor="@android:color/black"
+                        android:layout_marginStart="12dp" />
+                </LinearLayout>
+
+                <!-- Selección de recordatorio -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <ImageButton
+                        android:id="@+id/iconoRecordatorio"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_bell"
+                        android:contentDescription="Seleccionar recordatorio" />
+
+                    <TextView
+                        android:id="@+id/recordatorioTextView"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Sin fecha"
+                        android:textSize="14sp"
+                        android:textColor="@android:color/black"
+                        android:layout_marginStart="12dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Descripción -->
             <EditText
                 android:id="@+id/descripcionEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:autofillHints="description"
-                android:hint="Descripción del recordatorio"
+                android:hint="Descripción"
                 android:inputType="textMultiLine"
-                android:textSize="16sp" />
+                android:textSize="14sp"
+                android:background="@drawable/edittext_fondo"
+                android:padding="8dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="#AAAAAA" />
 
+            <!-- Botón Eliminar -->
             <Button
-                android:id="@+id/guardarButton"
-                android:layout_width="match_parent"
+                android:id="@+id/eliminarButton"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Actualizar" />
+                android:layout_marginTop="16dp"
+                android:text="Eliminar"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#FF0000"
+                android:minHeight="48dp"
+                android:minWidth="100dp" />
+
         </LinearLayout>
     </ScrollView>
 
 </LinearLayout>
-

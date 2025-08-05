@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class RecordatorioAdapter : RecyclerView.Adapter<RecordatorioAdapter.RecordatorioViewHolder>() {
+class RecordatorioAdapter(private val onEditClick: (Recordatorio) -> Unit) : RecyclerView.Adapter<RecordatorioAdapter.RecordatorioViewHolder>() {
 
     private var recordatorios: List<Recordatorio> = emptyList()
 
@@ -37,11 +37,15 @@ class RecordatorioAdapter : RecyclerView.Adapter<RecordatorioAdapter.Recordatori
         private val tituloTextView: TextView = itemView.findViewById(R.id.titulo)
         private val descripcionTextView: TextView = itemView.findViewById(R.id.descripcion)
         private val fechaTextView: TextView = itemView.findViewById(R.id.fecha)
+        private val iconoEditar: View = itemView.findViewById(R.id.icono_editar)
 
         fun bind(recordatorio: Recordatorio) {
             tituloTextView.text = recordatorio.titulo
             descripcionTextView.text = recordatorio.descripcion
             fechaTextView.text = formatDate(recordatorio.fechaHora)
+            iconoEditar.setOnClickListener {
+                onEditClick(recordatorio)
+            }
         }
 
         private fun formatDate(timestamp: Long): String {
