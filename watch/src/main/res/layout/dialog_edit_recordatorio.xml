@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.wear.widget.BoxInsetLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="#F5F5F5"
     android:padding="8dp">
 
@@ -31,7 +33,7 @@
                 android:textColor="@android:color/black"
                 android:textColorHint="#AAAAAA" />
 
-            <!-- Iconos horizontales -->
+            <!-- Iconos y textos para vencimiento y recordatorio -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -52,7 +54,7 @@
                         android:layout_width="36dp"
                         android:layout_height="36dp"
                         android:src="@drawable/ic_calendar"
-                        android:contentDescription="Seleccionar vencimiento" />
+                        android:contentDescription="Seleccionar vencimiento"/>
 
                     <TextView
                         android:id="@+id/vencimientoTextView"
@@ -62,7 +64,7 @@
                         android:text="Sin fecha"
                         android:textSize="14sp"
                         android:textColor="@android:color/black"
-                        android:layout_marginStart="12dp"/>
+                        android:layout_marginStart="12dp" />
                 </LinearLayout>
 
                 <!-- Selección de recordatorio -->
@@ -78,8 +80,7 @@
                         android:layout_width="36dp"
                         android:layout_height="36dp"
                         android:src="@drawable/ic_bell"
-                        android:contentDescription="Seleccionar recordatorio"
-                        />
+                        android:contentDescription="Seleccionar recordatorio" />
 
                     <TextView
                         android:id="@+id/recordatorioTextView"
@@ -89,7 +90,7 @@
                         android:text="Sin fecha"
                         android:textSize="14sp"
                         android:textColor="@android:color/black"
-                        android:layout_marginStart="12dp"/>
+                        android:layout_marginStart="12dp" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -106,20 +107,7 @@
                 android:textColor="@android:color/black"
                 android:textColorHint="#AAAAAA" />
 
-            <!-- Botón Actualizar -->
-            <Button
-                android:id="@+id/guardarButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Actualizar"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:backgroundTint="#601E8C"
-                android:minHeight="48dp"
-                android:minWidth="100dp" />
-
         </LinearLayout>
     </ScrollView>
-</androidx.wear.widget.BoxInsetLayout>
+
+</LinearLayout>

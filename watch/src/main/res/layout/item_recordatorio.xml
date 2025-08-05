@@ -51,6 +51,7 @@
         app:layout_constraintEnd_toStartOf="@id/checkbox_recordatorio"
         tools:text="12/08/2025 15:30" />
 
+
     <!-- CheckBox para marcar el recordatorio como leído -->
 
     <CheckBox
@@ -60,5 +61,15 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginStart="8dp" />
+
+    <!-- Icono para editar debajo del checkbox -->
+    <ImageView
+        android:id="@+id/icono_editar"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="4dp"
+        android:src="@drawable/ic_edit"
+        app:layout_constraintStart_toStartOf="@id/checkbox_recordatorio"
+        app:layout_constraintTop_toBottomOf="@id/checkbox_recordatorio"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

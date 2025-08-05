@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-08-04T21:07:03.776201600Z">
+        <DropdownSelection timestamp="2025-08-05T20:23:02.286365400Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=3f275f840000" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\abaru\.android\avd\Pixel_8_Pro_API_30.avd" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -15,7 +15,7 @@
       </SelectionState>
       <SelectionState runConfigName="watch">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-08-05T01:34:43.870689400Z">
+        <DropdownSelection timestamp="2025-08-05T20:51:32.623383300Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\chiki\.android\avd\Wear_OS_Rectangular.avd" />
@@ -26,10 +26,10 @@
       </SelectionState>
       <SelectionState runConfigName="smarttv">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-08-05T01:58:54.245008800Z">
+        <DropdownSelection timestamp="2025-08-05T20:22:57.666418300Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\chiki\.android\avd\Television_720p.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\abaru\.android\avd\Pixel_8_Pro_API_30.avd" />
             </handle>
           </Target>
         </DropdownSelection>

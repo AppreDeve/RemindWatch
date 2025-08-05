@@ -27,7 +27,7 @@ class SyncManager(private val context: Context) {
     private val smartTVSyncClient = SmartTVSyncClient(context)
 
     // IP de la Smart TV
-    private val smartTVIP = "192.168.100.25"
+    private val smartTVIP = "192.168.1.128"
 
     /**
      * Programa una eliminación para sincronizar más tarde
