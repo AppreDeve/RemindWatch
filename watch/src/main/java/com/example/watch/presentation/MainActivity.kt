@@ -13,6 +13,8 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.DatePicker
+import android.widget.TimePicker
 import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.wear.widget.WearableRecyclerView
@@ -240,21 +242,224 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
     private fun showDatePicker(onDateSelected: (Long, String) -> Unit) {
         val cal = Calendar.getInstance()
-        DatePickerDialog(this, { _, year, month, day ->
+
+        // Crear un layout personalizado para el date picker
+        val layout = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(24, 24, 24, 24)
+        }
+
+        val datePicker = DatePicker(this).apply {
+            init(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), null)
+            // Ajustar el tamaño para pantallas pequeñas
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = 32
+            }
+        }
+
+        val buttonLayout = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            setPadding(0, 16, 0, 0)
+        }
+
+        val btnCancel = Button(this).apply {
+            text = "Cancelar"
+            textSize = 14f
+            setPadding(16, 12, 16, 12)
+            layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                rightMargin = 8
+            }
+            setBackgroundColor(android.graphics.Color.parseColor("#757575"))
+        }
+
+        val btnOk = Button(this).apply {
+            text = "Aceptar"
+            textSize = 14f
+            setPadding(16, 12, 16, 12)
+            layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                leftMargin = 8
+            }
+            setBackgroundColor(android.graphics.Color.parseColor("#601E8C"))
+        }
+
+        buttonLayout.addView(btnCancel)
+        buttonLayout.addView(btnOk)
+
+        layout.addView(datePicker)
+        layout.addView(buttonLayout)
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Seleccionar Fecha")
+            .setView(layout)
+            .setCancelable(true)
+            .create()
+
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        btnOk.setOnClickListener {
+            val year = datePicker.year
+            val month = datePicker.month
+            val day = datePicker.dayOfMonth
+
             cal.set(year, month, day, 0, 0, 0)
             val formattedDate = "%04d-%02d-%02d".format(year, month + 1, day)
             onDateSelected(cal.timeInMillis, formattedDate)
-        }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun showDateTimePicker(onDateTimeSelected: (Long, String) -> Unit) {
         val cal = Calendar.getInstance()
-        DatePickerDialog(this, { _, year, month, day ->
-            TimePickerDialog(this, { _, hour, minute ->
-                cal.set(year, month, day, hour, minute, 0)
-                val formattedDateTime = "%04d-%02d-%02d %02d:%02d".format(year, month + 1, day, hour, minute)
-                onDateTimeSelected(cal.timeInMillis, formattedDateTime)
-            }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
-        }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+
+        // Primero mostrar selector de fecha
+        val layout = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(24, 24, 24, 24)
+        }
+
+        val datePicker = DatePicker(this).apply {
+            init(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), null)
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = 32
+            }
+        }
+
+        val buttonLayout = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            setPadding(0, 16, 0, 0)
+        }
+
+        val btnCancel = Button(this).apply {
+            text = "Cancelar"
+            textSize = 14f
+            setPadding(16, 12, 16, 12)
+            layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                rightMargin = 8
+            }
+            setBackgroundColor(android.graphics.Color.parseColor("#757575"))
+        }
+
+        val btnNext = Button(this).apply {
+            text = "Siguiente"
+            textSize = 14f
+            setPadding(16, 12, 16, 12)
+            layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                leftMargin = 8
+            }
+            setBackgroundColor(android.graphics.Color.parseColor("#601E8C"))
+        }
+
+        buttonLayout.addView(btnCancel)
+        buttonLayout.addView(btnNext)
+
+        layout.addView(datePicker)
+        layout.addView(buttonLayout)
+
+        val dateDialog = AlertDialog.Builder(this)
+            .setTitle("Seleccionar Fecha")
+            .setView(layout)
+            .setCancelable(true)
+            .create()
+
+        btnCancel.setOnClickListener {
+            dateDialog.dismiss()
+        }
+
+        btnNext.setOnClickListener {
+            val year = datePicker.year
+            val month = datePicker.month
+            val day = datePicker.dayOfMonth
+
+            dateDialog.dismiss()
+
+            // Ahora mostrar selector de hora
+            showTimePicker(year, month, day, onDateTimeSelected)
+        }
+
+        dateDialog.show()
+    }
+
+    private fun showTimePicker(year: Int, month: Int, day: Int, onDateTimeSelected: (Long, String) -> Unit) {
+        val cal = Calendar.getInstance()
+
+        val layout = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(24, 24, 24, 24)
+        }
+
+        val timePicker = TimePicker(this).apply {
+            setIs24HourView(true)
+            hour = cal.get(Calendar.HOUR_OF_DAY)
+            minute = cal.get(Calendar.MINUTE)
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = 32
+            }
+        }
+
+        val buttonLayout = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            setPadding(0, 16, 0, 0)
+        }
+
+        val btnCancel = Button(this).apply {
+            text = "Cancelar"
+            textSize = 14f
+            setPadding(16, 12, 16, 12)
+            layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                rightMargin = 8
+            }
+            setBackgroundColor(android.graphics.Color.parseColor("#757575"))
+        }
+
+        val btnOk = Button(this).apply {
+            text = "Aceptar"
+            textSize = 14f
+            setPadding(16, 12, 16, 12)
+            layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                leftMargin = 8
+            }
+            setBackgroundColor(android.graphics.Color.parseColor("#601E8C"))
+        }
+
+        buttonLayout.addView(btnCancel)
+        buttonLayout.addView(btnOk)
+
+        layout.addView(timePicker)
+        layout.addView(buttonLayout)
+
+        val timeDialog = AlertDialog.Builder(this)
+            .setTitle("Seleccionar Hora")
+            .setView(layout)
+            .setCancelable(true)
+            .create()
+
+        btnCancel.setOnClickListener {
+            timeDialog.dismiss()
+        }
+
+        btnOk.setOnClickListener {
+            val hour = timePicker.hour
+            val minute = timePicker.minute
+
+            cal.set(year, month, day, hour, minute, 0)
+            val formattedDateTime = "%04d-%02d-%02d %02d:%02d".format(year, month + 1, day, hour, minute)
+            onDateTimeSelected(cal.timeInMillis, formattedDateTime)
+            timeDialog.dismiss()
+        }
+
+        timeDialog.show()
     }
 }
